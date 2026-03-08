@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 3 — Программы и операционная система</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf7f2;
+  --surface: #f0ebe2;
+  --card: #ffffff;
+  --border: #e2ddd5;
+  --ink: #1c1812;
+  --muted: #8c8070;
+  --orange: #e05c1a;
+  --green: #2a7a4f;
+  --blue: #1a4a8a;
+  --purple: #6a3aaa;
+  --red: #c0392b;
+  --yellow: #d4a017;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-weight:400;
+  line-height:1.75;
+}
+
+/* PAPER TEXTURE */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:1;
+}
+
+.page { max-width:860px; margin:0 auto; padding:60px 24px 120px; position:relative; z-index:1; }
+
+/* ── HEADER ── */
+.lesson-badge {
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--ink); color:var(--bg);
+  font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+  padding:8px 20px; border-radius:0;
+  margin-bottom:32px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+  padding-right:28px;
+  animation: fadeUp .4s ease both;
+}
+.lb-num {
+  background:var(--orange); color:#fff;
+  width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700;
+}
+
+h1 {
+  font-family:'Fraunces',serif;
+  font-size:clamp(36px,6.5vw,68px);
+  font-weight:900; line-height:1.03; letter-spacing:-1.5px;
+  margin-bottom:24px;
+  animation:fadeUp .4s .07s ease both;
+}
+h1 .accent { color:var(--orange); }
+h1 .italic { font-style:italic; }
+
+.intro-box {
+  border-left:4px solid var(--orange);
+  padding:18px 24px;
+  background:rgba(224,92,26,.06);
+  border-radius:0 12px 12px 0;
+  margin-bottom:48px;
+  animation:fadeUp .4s .14s ease both;
+}
+.intro-box p { font-size:15px; color:#5a4a3a; margin:0; }
+
+/* NAV */
+.toc {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:56px;
+  animation:fadeUp .4s .18s ease both;
+}
+.toc a {
+  border:1.5px solid var(--border); background:var(--card);
+  color:var(--muted); text-decoration:none;
+  font-size:13px; font-weight:500; padding:7px 16px; border-radius:6px;
+  transition:all .15s;
+}
+.toc a:hover { border-color:var(--orange); color:var(--orange); background:rgba(224,92,26,.05); }
+
+/* DIVIDER */
+hr { border:none; border-top:2px dashed var(--border); margin:56px 0; }
+
+/* SECTION */
+.section { margin-bottom:60px; animation:fadeUp .5s ease both; }
+.s-label {
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--orange); font-weight:700; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.s-label::after { content:''; flex:1; height:1px; background:var(--border); }
+h2 {
+  font-family:'Fraunces',serif;
+  font-size:clamp(24px,4vw,38px);
+  font-weight:800; line-height:1.15; margin-bottom:20px; letter-spacing:-.5px;
+}
+p { font-size:15px; margin-bottom:16px; }
+p:last-child { margin-bottom:0; }
+strong { color:var(--ink); font-weight:600; }
+
+/* ANALOGY */
+.analogy {
+  border-radius:14px; padding:24px 26px;
+  margin:22px 0;
+  display:flex; gap:18px; align-items:flex-start;
+}
+.analogy.orange { background:rgba(224,92,26,.07); border:1px solid rgba(224,92,26,.2); }
+.analogy.green  { background:rgba(42,122,79,.07);  border:1px solid rgba(42,122,79,.2); }
+.analogy.blue   { background:rgba(26,74,138,.07);  border:1px solid rgba(26,74,138,.2); }
+.analogy.purple { background:rgba(106,58,170,.07); border:1px solid rgba(106,58,170,.2); }
+.an-icon { font-size:32px; flex-shrink:0; margin-top:2px; }
+.an-body p { font-size:14px; color:#5a4a3a; margin:0; }
+.an-body p+p { margin-top:8px; }
+.an-title { font-weight:700; font-size:14px; margin-bottom:6px; }
+
+/* ── OS LAYERS DIAGRAM ── */
+.os-layers {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:16px; padding:32px; margin:28px 0;
+  box-shadow:0 4px 24px rgba(28,24,18,.06);
+}
+.os-layers h3 { font-family:'Fraunces',serif; font-size:20px; margin-bottom:6px; }
+.os-layers .sub { font-size:13px; color:var(--muted); margin-bottom:24px; }
+.layer {
+  border-radius:10px; padding:16px 22px;
+  margin-bottom:6px; cursor:pointer;
+  transition:all .2s; position:relative;
+  border:1.5px solid transparent;
+  display:flex; align-items:center; gap:14px;
+}
+.layer:hover { transform:translateX(6px); }
+.layer.active { border-color:currentColor !important; }
+.layer.l-user   { background:#fdf3eb; color:var(--orange); }
+.layer.l-app    { background:#edf5f1; color:var(--green); }
+.layer.l-os     { background:#ebf0fa; color:var(--blue); }
+.layer.l-kernel { background:#f3eefb; color:var(--purple); }
+.layer.l-hw     { background:#f7f3ee; color:#8a6a40; }
+.layer-icon { font-size:22px; flex-shrink:0; }
+.layer-name { font-weight:700; font-size:15px; }
+.layer-sub  { font-size:12px; opacity:.75; }
+.layer-detail {
+  display:none; background:var(--surface);
+  border-radius:10px; padding:16px 20px;
+  margin-bottom:8px; margin-top:-2px;
+  font-size:14px; color:#5a4a3a;
+  border-left:3px solid var(--border);
+  animation:expand .25s ease;
+}
+.layer-detail.show { display:block; }
+@keyframes expand { from{opacity:0;transform:scaleY(.9)} to{opacity:1;transform:scaleY(1)} }
+
+/* ── PROCESS MANAGER ── */
+.proc-demo {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:16px; padding:32px; margin:28px 0;
+  box-shadow:0 4px 24px rgba(28,24,18,.06);
+}
+.proc-demo h3 { font-family:'Fraunces',serif; font-size:20px; margin-bottom:6px; }
+.proc-demo .sub { font-size:13px; color:var(--muted); margin-bottom:20px; }
+.proc-toolbar { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.proc-btn {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:8px; padding:8px 18px; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .15s; font-family:'Plus Jakarta Sans',sans-serif;
+  color:var(--ink);
+}
+.proc-btn:hover { border-color:var(--orange); color:var(--orange); }
+.proc-btn.kill { color:var(--red); }
+.proc-btn.kill:hover { border-color:var(--red); }
+.proc-list { display:flex; flex-direction:column; gap:8px; min-height:200px; }
+.proc-item {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 16px;
+  display:flex; align-items:center; gap:12px;
+  animation:procIn .3s ease;
+}
+@keyframes procIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.proc-icon { font-size:20px; flex-shrink:0; }
+.proc-info { flex:1; }
+.proc-name { font-weight:600; font-size:14px; }
+.proc-pid  { font-size:11px; color:var(--muted); }
+.proc-bar-wrap { width:100px; }
+.proc-bar-track { background:var(--border); border-radius:100px; height:5px; overflow:hidden; }
+.proc-bar-fill  { height:100%; border-radius:100px; background:var(--orange); transition:width .8s; }
+.proc-cpu { font-size:12px; color:var(--muted); text-align:right; margin-top:3px; }
+.proc-kill {
+  background:none; border:1.5px solid var(--border); border-radius:6px;
+  width:28px; height:28px; cursor:pointer; font-size:14px; transition:all .15s;
+  display:flex; align-items:center; justify-content:center;
+}
+.proc-kill:hover { border-color:var(--red); background:rgba(192,57,43,.08); }
+.proc-empty { color:var(--muted); font-size:14px; text-align:center; padding:40px; }
+
+/* ── FILE SYSTEM ── */
+.fs-demo {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:16px; padding:32px; margin:28px 0;
+  box-shadow:0 4px 24px rgba(28,24,18,.06);
+}
+.fs-demo h3 { font-family:'Fraunces',serif; font-size:20px; margin-bottom:6px; }
+.fs-demo .sub { font-size:13px; color:var(--muted); margin-bottom:20px; }
+.fs-tree { font-size:14px; line-height:1.9; }
+.fs-folder { cursor:pointer; user-select:none; display:flex; align-items:center; gap:6px; }
+.fs-folder:hover .fs-name { color:var(--orange); }
+.fs-name { transition:color .15s; font-weight:600; }
+.fs-children { padding-left:24px; border-left:1.5px dashed var(--border); margin-left:10px; display:none; }
+.fs-children.open { display:block; }
+.fs-file { display:flex; align-items:center; gap:6px; color:var(--muted); }
+.fs-path { font-size:13px; color:var(--muted); margin-top:14px; font-family:monospace; background:var(--surface); padding:8px 14px; border-radius:8px; }
+.fs-path span { color:var(--orange); font-weight:600; }
+
+/* ── HOW PROGRAM RUNS ── */
+.steps-flow { margin:28px 0; }
+.step-item {
+  display:flex; gap:20px; align-items:flex-start;
+  padding:20px 0; border-bottom:1px dashed var(--border);
+  cursor:pointer;
+}
+.step-item:last-child { border-bottom:none; }
+.step-num {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  border:2px solid var(--orange); color:var(--orange);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces',serif; font-weight:800; font-size:16px;
+  transition:all .2s;
+}
+.step-item:hover .step-num,
+.step-item.active .step-num { background:var(--orange); color:#fff; }
+.step-body { flex:1; }
+.step-title { font-weight:700; font-size:15px; margin-bottom:4px; }
+.step-desc { font-size:14px; color:#5a4a3a; }
+.step-expand {
+  display:none; margin-top:12px; background:var(--surface);
+  border-radius:10px; padding:14px 18px; font-size:13px; color:#6a5a4a;
+  border-left:3px solid var(--orange);
+}
+.step-item.active .step-expand { display:block; animation:expand .25s ease; }
+
+/* ── RAM vs DISK ── */
+.comparison {
+  display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0;
+}
+@media(max-width:540px){ .comparison { grid-template-columns:1fr; } }
+.cmp-card {
+  border-radius:14px; padding:24px;
+}
+.cmp-card.ram  { background:#ebf0fa; border:1.5px solid rgba(26,74,138,.2); }
+.cmp-card.disk { background:#edf5f1; border:1.5px solid rgba(42,122,79,.2); }
+.cmp-icon { font-size:36px; margin-bottom:12px; }
+.cmp-title { font-family:'Fraunces',serif; font-weight:800; font-size:18px; margin-bottom:10px; }
+.cmp-card.ram  .cmp-title { color:var(--blue); }
+.cmp-card.disk .cmp-title { color:var(--green); }
+.cmp-list { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.cmp-list li { font-size:13px; display:flex; gap:8px; align-items:flex-start; }
+.cmp-list li::before { content:'→'; font-weight:700; flex-shrink:0; margin-top:1px; }
+.cmp-card.ram  .cmp-list li::before { color:var(--blue); }
+.cmp-card.disk .cmp-list li::before { color:var(--green); }
+
+/* ── TASKS ── */
+.level-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px; }
+.lt {
+  padding:8px 22px; border-radius:100px; border:1.5px solid var(--border);
+  font-size:13px; font-weight:600; cursor:pointer; transition:all .15s;
+  background:var(--card); color:var(--muted);
+}
+.lt.easy.active  { border-color:var(--green);  color:var(--green);  background:rgba(42,122,79,.08); }
+.lt.mid.active   { border-color:var(--orange); color:var(--orange); background:rgba(224,92,26,.08); }
+.lt.hard.active  { border-color:var(--purple); color:var(--purple); background:rgba(106,58,170,.08); }
+.task-group { display:none; }
+.task-group.show { display:block; animation:fadeUp .3s ease; }
+
+.task-card {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:14px; padding:28px; margin-bottom:16px;
+  box-shadow:0 2px 12px rgba(28,24,18,.04);
+}
+.task-badge {
+  display:inline-block; font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  padding:4px 12px; border-radius:4px; font-weight:700; margin-bottom:14px;
+}
+.task-badge.easy   { background:rgba(42,122,79,.1);   color:var(--green);  border:1px solid rgba(42,122,79,.25); }
+.task-badge.mid    { background:rgba(224,92,26,.1);   color:var(--orange); border:1px solid rgba(224,92,26,.25); }
+.task-badge.hard   { background:rgba(106,58,170,.1);  color:var(--purple); border:1px solid rgba(106,58,170,.25); }
+
+.task-q { font-size:16px; font-weight:600; line-height:1.45; margin-bottom:18px; }
+
+.task-opts { display:flex; flex-direction:column; gap:9px; margin-bottom:12px; }
+.task-opt {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 18px; font-size:14px; font-weight:500;
+  cursor:pointer; text-align:left; color:var(--ink);
+  transition:all .15s; font-family:'Plus Jakarta Sans',sans-serif;
+}
+.task-opt:hover:not(:disabled) { border-color:var(--orange); background:rgba(224,92,26,.06); }
+.task-opt.correct { border-color:var(--green)!important;  background:rgba(42,122,79,.08); color:var(--green); }
+.task-opt.wrong   { border-color:var(--red)!important;    background:rgba(192,57,43,.06); color:var(--red); }
+.task-opt:disabled { cursor:default; }
+
+.task-input {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 16px;
+  color:var(--ink); font-family:'Plus Jakarta Sans',sans-serif; font-size:15px;
+  width:100%; outline:none; transition:border-color .15s; margin-bottom:12px;
+}
+.task-input:focus { border-color:var(--orange); }
+.check-btn {
+  background:var(--ink); color:var(--bg);
+  border:none; border-radius:10px; padding:11px 26px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; font-weight:600;
+  cursor:pointer; transition:all .15s;
+}
+.check-btn:hover { background:var(--orange); }
+.task-feedback { font-size:13px; margin-top:12px; padding:12px 16px; border-radius:10px; display:none; line-height:1.55; }
+.task-feedback.ok { background:rgba(42,122,79,.1);  color:var(--green); border:1px solid rgba(42,122,79,.25); display:block; }
+.task-feedback.no { background:rgba(192,57,43,.08); color:var(--red);   border:1px solid rgba(192,57,43,.2); display:block; }
+
+/* SCENARIO TASK */
+.scenario {
+  background:linear-gradient(135deg,#fdf6ef,#f0ebe2);
+  border:1.5px solid rgba(224,92,26,.2); border-radius:12px;
+  padding:20px 22px; margin-bottom:16px; font-size:14px;
+  line-height:1.6; color:#5a4a3a;
+}
+.scenario strong { color:var(--ink); }
+
+/* ORDER TASK */
+.order-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.order-item {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:10px; padding:12px 16px; font-size:14px; font-weight:500;
+  display:flex; align-items:center; gap:12px; cursor:grab;
+  transition:all .15s; user-select:none;
+}
+.order-item:active { cursor:grabbing; opacity:.7; }
+.order-item.dragging { opacity:.5; border-style:dashed; }
+.order-item.drag-over { border-color:var(--orange); background:rgba(224,92,26,.06); }
+.order-handle { color:var(--muted); font-size:16px; }
+.order-num { width:24px; height:24px; border-radius:50%; background:var(--border);
+  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+
+/* SUMMARY */
+.summary {
+  background:var(--ink); color:var(--bg);
+  border-radius:20px; padding:40px; margin-top:60px;
+}
+.summary h2 { font-family:'Fraunces',serif; font-size:26px; margin-bottom:24px; color:#fff; }
+.sum-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:540px){ .sum-grid { grid-template-columns:1fr; } }
+.sg-item {
+  background:rgba(255,255,255,.07); border-radius:12px; padding:18px;
+  border:1px solid rgba(255,255,255,.1);
+}
+.sg-num { font-family:'Fraunces',serif; font-size:28px; font-weight:900; color:var(--orange); line-height:1; margin-bottom:8px; }
+.sg-text { font-size:13px; color:#c8c0b8; line-height:1.5; }
+.sg-text strong { color:#fff; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="lesson-badge"><span class="lb-num">3</span> Урок третий</div>
+  <h1>Программы<br>и <span class="accent italic">операционная</span><br>система</h1>
+  <div class="intro-box">
+    <p>Вы уже знаете, из чего сделан компьютер и как он хранит данные. Теперь — самый важный вопрос для пользователя: <strong>кто всем управляет?</strong> Что происходит после нажатия кнопки включения? Почему одновременно работают десятки программ? Разберёмся.</p>
+  </div>
+
+  <nav class="toc">
+    <a href="#s1">🏛 Что такое ОС</a>
+    <a href="#s2">📦 Слои системы</a>
+    <a href="#s3">⚙️ Процессы</a>
+    <a href="#s4">📁 Файловая система</a>
+    <a href="#s5">🚀 Запуск программы</a>
+    <a href="#tasks">📝 Задания</a>
+  </nav>
+
+  <!-- S1: ЧТО ТАКОЕ ОС -->
+  <div class="section" id="s1">
+    <div class="s-label">Часть 1 <span style="display:inline-block;width:auto"></span></div>
+    <h2>Что такое операционная система</h2>
+    <p>Когда вы нажимаете кнопку включения — компьютер первым делом загружает <strong>операционную систему (ОС)</strong>. Это главная программа, без которой всё железо — просто груда металла и кремния.</p>
+    <p>ОС делает три вещи: <strong>управляет ресурсами</strong> (кто использует процессор, память, диск), <strong>даёт удобный интерфейс</strong> для пользователя и программ, и <strong>обеспечивает безопасность</strong> — чтобы одна программа не сломала другую.</p>
+
+    <div class="analogy orange">
+      <span class="an-icon">🏢</span>
+      <div class="an-body">
+        <div class="an-title">Аналогия: ОС — это управляющий бизнес-центра</div>
+        <p>Представьте здание с сотнями офисов (программы). Управляющий (ОС) решает: кому какую комнату дать, кто использует лифт (процессор), кто может войти на склад (диск). Без управляющего — хаос: все лезут везде одновременно.</p>
+      </div>
+    </div>
+
+    <p>Самые известные ОС: <strong>Windows</strong> (Microsoft), <strong>macOS</strong> (Apple), <strong>Linux</strong> (open source). На смартфонах — <strong>Android</strong> и <strong>iOS</strong>. Все они делают одно и то же, но по-разному.</p>
+  </div>
+
+  <hr>
+
+  <!-- S2: СЛОИ -->
+  <div class="section" id="s2">
+    <div class="s-label">Часть 2</div>
+    <h2>Слои: от железа до пользователя</h2>
+    <p>Компьютер — это как слоёный пирог. Каждый слой не знает о деталях нижнего — он просто пользуется его услугами. Нажмите на слой, чтобы узнать подробнее:</p>
+
+    <div class="os-layers">
+      <h3>Архитектура компьютерной системы</h3>
+      <div class="sub">Нажмите на любой слой 👇</div>
+
+      <div class="layer l-user" onclick="toggleLayer('user')">
+        <span class="layer-icon">🙋</span>
+        <div>
+          <div class="layer-name">Пользователь</div>
+          <div class="layer-sub">Вы — человек за экраном</div>
+        </div>
+      </div>
+      <div class="layer-detail" id="ld-user">
+        Вы нажимаете кнопки, вводите текст, смотрите результат. Вы не думаете о байтах и транзисторах — вы просто работаете.
+        <br><br>📌 <strong>Пример:</strong> вы пишете «Привет» в мессенджере и нажимаете «Отправить». За этим стоят тысячи операций — но вам не нужно об этом знать.
+      </div>
+
+      <div class="layer l-app" onclick="toggleLayer('app')">
+        <span class="layer-icon">📱</span>
+        <div>
+          <div class="layer-name">Приложения</div>
+          <div class="layer-sub">Браузер, Word, игры, мессенджеры</div>
+        </div>
+      </div>
+      <div class="layer-detail" id="ld-app">
+        Программы, которыми вы пользуетесь каждый день. Они не работают напрямую с железом — они обращаются к ОС через специальные команды (API).
+        <br><br>📌 <strong>Пример:</strong> Chrome хочет открыть файл. Он говорит ОС: «Открой мне файл по пути C:\Users\...». ОС идёт на диск, читает и возвращает данные.
+      </div>
+
+      <div class="layer l-os" onclick="toggleLayer('os')">
+        <span class="layer-icon">⚙️</span>
+        <div>
+          <div class="layer-name">Операционная система</div>
+          <div class="layer-sub">Windows, macOS, Linux — главный дирижёр</div>
+        </div>
+      </div>
+      <div class="layer-detail" id="ld-os">
+        ОС управляет всем: распределяет процессорное время между программами, управляет памятью, обеспечивает доступ к файлам и сети. Без ОС программы не могут работать.
+        <br><br>📌 <strong>Пример:</strong> У вас открыты браузер, музыкальный плеер и Word одновременно. ОС делит время процессора между ними — переключается тысячи раз в секунду, создавая иллюзию одновременной работы.
+      </div>
+
+      <div class="layer l-kernel" onclick="toggleLayer('kernel')">
+        <span class="layer-icon">🔧</span>
+        <div>
+          <div class="layer-name">Ядро (Kernel)</div>
+          <div class="layer-sub">Самая глубокая часть ОС — напрямую управляет железом</div>
+        </div>
+      </div>
+      <div class="layer-detail" id="ld-kernel">
+        Ядро — сердце операционной системы. Только оно имеет прямой доступ к железу. Обычные программы не могут трогать железо напрямую — это защита от ошибок и вирусов.
+        <br><br>📌 <strong>Аналогия:</strong> Ядро — как главный инженер здания, у которого есть ключи ото всех комнат. Жильцы (программы) не могут сами лезть в электрощиток.
+      </div>
+
+      <div class="layer l-hw" onclick="toggleLayer('hw')">
+        <span class="layer-icon">💻</span>
+        <div>
+          <div class="layer-name">Железо (Hardware)</div>
+          <div class="layer-sub">CPU, RAM, диск, видеокарта — физические компоненты</div>
+        </div>
+      </div>
+      <div class="layer-detail" id="ld-hw">
+        Это то, что вы изучили в Уроке 1 — физические компоненты компьютера. Они выполняют реальную работу: вычисления, хранение, отображение. Сами по себе — это просто «немое» железо.
+        <br><br>📌 <strong>Аналогия:</strong> Мышцы тела. Они сильные, но без нервной системы (ОС) и мозга (CPU под управлением программ) — не двигаются.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- S3: ПРОЦЕССЫ -->
+  <div class="section" id="s3">
+    <div class="s-label">Часть 3</div>
+    <h2>Процессы: как работает многозадачность</h2>
+    <p>Когда вы запускаете программу — ОС создаёт <strong>процесс</strong>. Процесс — это «живой» экземпляр программы в памяти: со своими данными, статусом и выделенными ресурсами.</p>
+
+    <div class="analogy green">
+      <span class="an-icon">👨‍🍳</span>
+      <div class="an-body">
+        <div class="an-title">Аналогия: ресторан с одним поваром</div>
+        <p>Один повар (процессор) не может готовить несколько блюд <em>буквально одновременно</em>. Но он очень быстро переключается: 2 секунды режет лук, 3 секунды мешает суп, 1 секунду жарит мясо — и кажется, что всё готовится параллельно. ОС делает то же самое с процессами.</p>
+      </div>
+    </div>
+
+    <p>У каждого процесса есть <strong>PID</strong> (Process ID) — уникальный номер. ОС жонглирует тысячами процессов, давая каждому крошечный кусочек времени процессора по очереди. Это называется <strong>планировщик задач</strong>.</p>
+
+    <!-- PROCESS MANAGER DEMO -->
+    <div class="proc-demo">
+      <h3>🖥 Симулятор диспетчера задач</h3>
+      <div class="sub">Нажимайте кнопки — запускайте и завершайте процессы</div>
+      <div class="proc-toolbar">
+        <button class="proc-btn" onclick="launchProc('🌐','Браузер Chrome')">+ Chrome</button>
+        <button class="proc-btn" onclick="launchProc('📝','Word')">+ Word</button>
+        <button class="proc-btn" onclick="launchProc('🎵','Музыка')">+ Музыка</button>
+        <button class="proc-btn" onclick="launchProc('🎮','Игра')">+ Игра</button>
+        <button class="proc-btn" onclick="launchProc('📧','Почта')">+ Почта</button>
+      </div>
+      <div class="proc-list" id="procList">
+        <div class="proc-empty" id="procEmpty">Запустите несколько программ кнопками выше</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- S4: ФАЙЛОВАЯ СИСТЕМА -->
+  <div class="section" id="s4">
+    <div class="s-label">Часть 4</div>
+    <h2>Файловая система: порядок на диске</h2>
+    <p>Миллиарды байт на диске нужно как-то организовать. Для этого существует <strong>файловая система</strong> — система папок и файлов, с которой вы работаете каждый день.</p>
+
+    <div class="analogy blue">
+      <span class="an-icon">🗄️</span>
+      <div class="an-body">
+        <div class="an-title">Аналогия: архив с папками</div>
+        <p>Представьте огромный шкаф с ящиками. В каждом ящике — папки, в папках — документы. Если бы не было системы, вы бы просто бросали все бумаги в кучу и никогда ничего не нашли бы. Файловая система — это этот шкаф с чёткой структурой.</p>
+      </div>
+    </div>
+
+    <p>На Windows всё начинается с диска <strong>C:\</strong>. На Mac и Linux — с корня <strong>/</strong>. Путь к файлу — это адрес: <code style="background:var(--surface);padding:2px 8px;border-radius:6px;font-size:13px;">C:\Users\Иван\Documents\диплом.docx</code></p>
+
+    <!-- FILE TREE DEMO -->
+    <div class="fs-demo">
+      <h3>📁 Интерактив: дерево файлов</h3>
+      <div class="sub">Нажмите на папку, чтобы раскрыть или закрыть её</div>
+      <div class="fs-tree" id="fsTree"></div>
+      <div class="fs-path">Текущий путь: <span id="fsPath">C:\</span></div>
+    </div>
+
+    <div class="comparison">
+      <div class="cmp-card ram">
+        <div class="cmp-icon">💾</div>
+        <div class="cmp-title">Файл на диске</div>
+        <ul class="cmp-list">
+          <li>Хранится постоянно</li>
+          <li>Остаётся после выключения</li>
+          <li>Медленнее в работе</li>
+          <li>Пример: документ.docx</li>
+        </ul>
+      </div>
+      <div class="cmp-card disk">
+        <div class="cmp-icon">📋</div>
+        <div class="cmp-title">Открытый в RAM</div>
+        <ul class="cmp-list">
+          <li>Временная рабочая копия</li>
+          <li>Пропадёт без сохранения</li>
+          <li>Мгновенный доступ</li>
+          <li>Пример: открытый Word</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- S5: КАК ЗАПУСКАЕТСЯ ПРОГРАММА -->
+  <div class="section" id="s5">
+    <div class="s-label">Часть 5</div>
+    <h2>Что происходит, когда вы запускаете программу</h2>
+    <p>Нажали двойной клик по иконке — и за следующие доли секунды случается вот что. Нажмите на каждый шаг:</p>
+
+    <div class="steps-flow" id="stepsFlow"></div>
+
+    <div class="analogy purple">
+      <span class="an-icon">🎬</span>
+      <div class="an-body">
+        <div class="an-title">Большая картина за 1 предложение</div>
+        <p>ОС читает <strong>инструкцию</strong> с диска, <strong>размещает</strong> её в оперативной памяти, <strong>создаёт</strong> процесс и <strong>разрешает</strong> процессору начать выполнение — это занимает менее секунды.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- TASKS -->
+  <div class="section" id="tasks">
+    <div class="s-label">Задания</div>
+    <h2>Проверьте себя</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:22px;">Три уровня — выбирайте свой:</p>
+
+    <div class="level-tabs">
+      <button class="lt easy active" onclick="setLevel('easy')">🟢 Базовый</button>
+      <button class="lt mid"         onclick="setLevel('mid')">🟠 Средний</button>
+      <button class="lt hard"        onclick="setLevel('hard')">🟣 Сложный</button>
+    </div>
+
+    <!-- EASY -->
+    <div class="task-group show" id="group-easy">
+
+      <div class="task-card">
+        <div class="task-badge easy">Базовый · 1</div>
+        <div class="task-q">Что такое операционная система?</div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'e1',false)">Тип процессора от Intel</button>
+          <button class="task-opt" onclick="tOpt(this,'e1',true)">Главная программа, которая управляет всем компьютером</button>
+          <button class="task-opt" onclick="tOpt(this,'e1',false)">Антивирусная защита</button>
+          <button class="task-opt" onclick="tOpt(this,'e1',false)">Браузер для выхода в интернет</button>
+        </div>
+        <div class="task-feedback" id="fb-e1"></div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge easy">Базовый · 2</div>
+        <div class="task-q">Что из перечисленного является операционной системой?</div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'e2',false)">Google Chrome</button>
+          <button class="task-opt" onclick="tOpt(this,'e2',false)">Microsoft Word</button>
+          <button class="task-opt" onclick="tOpt(this,'e2',true)">Windows 11</button>
+          <button class="task-opt" onclick="tOpt(this,'e2',false)">Photoshop</button>
+        </div>
+        <div class="task-feedback" id="fb-e2"></div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge easy">Базовый · 3</div>
+        <div class="task-q">Вы открыли документ в Word, поработали и закрыли без сохранения. Что произошло с изменениями?</div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'e3',false)">Они сохранились автоматически на диске</button>
+          <button class="task-opt" onclick="tOpt(this,'e3',true)">Они потеряны — были в RAM и исчезли при закрытии</button>
+          <button class="task-opt" onclick="tOpt(this,'e3',false)">Они остались в процессоре</button>
+        </div>
+        <div class="task-feedback" id="fb-e3"></div>
+      </div>
+
+    </div>
+
+    <!-- MID -->
+    <div class="task-group" id="group-mid">
+
+      <div class="task-card">
+        <div class="task-badge mid">Средний · 1</div>
+        <div class="task-q">У вас открыты: браузер, музыкальный плеер и антивирус. У компьютера 4-ядерный процессор. Почему все три программы работают «одновременно»?</div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'m1',false)">Каждая программа использует отдельный процессор</button>
+          <button class="task-opt" onclick="tOpt(this,'m1',true)">ОС переключает процессор между программами тысячи раз в секунду, создавая иллюзию параллельности</button>
+          <button class="task-opt" onclick="tOpt(this,'m1',false)">Программы ждут друг друга по очереди, пользователь этого не замечает</button>
+        </div>
+        <div class="task-feedback" id="fb-m1"></div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge mid">Средний · 2</div>
+        <div class="task-q">
+          <div class="scenario">Сценарий: Антон скачал файл <strong>photo.jpg</strong> в папку <strong>Загрузки</strong>. Его полный путь на Windows выглядит так:<br><code style="background:#fff;padding:3px 8px;border-radius:6px;">C:\Users\Anton\Downloads\photo.jpg</code><br><br>Что означает <strong>C:\</strong> в начале пути?</div>
+        </div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'m2',false)">Имя пользователя</button>
+          <button class="task-opt" onclick="tOpt(this,'m2',true)">Корень файловой системы — начало диска C</button>
+          <button class="task-opt" onclick="tOpt(this,'m2',false)">Название файла</button>
+          <button class="task-opt" onclick="tOpt(this,'m2',false)">Формат фотографии</button>
+        </div>
+        <div class="task-feedback" id="fb-m2"></div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge mid">Средний · 3</div>
+        <div class="task-q">Расставьте шаги запуска программы в правильном порядке. Перетащите элементы мышью:</div>
+        <div class="order-list" id="orderList"></div>
+        <button class="check-btn" onclick="checkOrder()">Проверить порядок</button>
+        <div class="task-feedback" id="fb-order"></div>
+      </div>
+
+    </div>
+
+    <!-- HARD -->
+    <div class="task-group" id="group-hard">
+
+      <div class="task-card">
+        <div class="task-badge hard">Сложный · 1</div>
+        <div class="task-q">Почему обычные программы не могут напрямую обращаться к железу (например, записывать данные прямо на диск), а должны просить об этом ОС?</div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'h1',false)">Потому что это физически невозможно — у программ нет проводов к диску</button>
+          <button class="task-opt" onclick="tOpt(this,'h1',true)">Это намеренная защита: если каждая программа могла бы напрямую писать на диск, вирус или сбойная программа могла бы уничтожить все данные</button>
+          <button class="task-opt" onclick="tOpt(this,'h1',false)">ОС — это антивирус, который проверяет все файлы</button>
+        </div>
+        <div class="task-feedback" id="fb-h1"></div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge hard">Сложный · 2</div>
+        <div class="task-q">
+          <div class="scenario">Сценарий: На компьютере 8 ГБ RAM. Запущены: браузер (2 ГБ), игра (4 ГБ), Word (0.5 ГБ), антивирус (0.3 ГБ). Итого: 6.8 ГБ занято. Пользователь запускает ещё один тяжёлый редактор (2 ГБ). Памяти не хватает!</div>
+          Что сделает ОС в этой ситуации?
+        </div>
+        <div class="task-opts">
+          <button class="task-opt" onclick="tOpt(this,'h2',false)">Немедленно выключит компьютер</button>
+          <button class="task-opt" onclick="tOpt(this,'h2',false)">Молча удалит файлы пользователя чтобы освободить место</button>
+          <button class="task-opt" onclick="tOpt(this,'h2',true)">Переместит часть данных из RAM на диск (swap/файл подкачки), что замедлит работу, но программы продолжат работать</button>
+        </div>
+        <div class="task-feedback" id="fb-h2"></div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-badge hard">Сложный · 3</div>
+        <div class="task-q">macOS, Windows и Linux — все три являются операционными системами. Назовите одно принципиальное отличие Linux от двух других (введите своими словами — ответ проверяется на ключевые слова).</div>
+        <input class="task-input" type="text" placeholder="Введите ответ..." id="inp-h3">
+        <button class="check-btn" onclick="checkText()">Проверить</button>
+        <div class="task-feedback" id="fb-h3"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <h2>📌 Итоги урока</h2>
+    <div class="sum-grid">
+      <div class="sg-item">
+        <div class="sg-num">01</div>
+        <div class="sg-text"><strong>ОС — главный дирижёр.</strong> Без неё железо не может делать ничего полезного.</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-num">02</div>
+        <div class="sg-text"><strong>Слои защищают друг друга.</strong> Программы не могут напрямую ломать железо — только через ОС.</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-num">03</div>
+        <div class="sg-text"><strong>Процесс — живая программа.</strong> Каждая запущенная программа — это процесс с PID и выделенной памятью.</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-num">04</div>
+        <div class="sg-text"><strong>Файловая система = адресная книга диска.</strong> Путь к файлу — его точный адрес.</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-num">05</div>
+        <div class="sg-text"><strong>RAM + Диск — разные роли.</strong> Диск хранит, RAM работает. Не сохранил — потерял.</div>
+      </div>
+      <div class="sg-item">
+        <div class="sg-num">06</div>
+        <div class="sg-text"><strong>Многозадачность — иллюзия.</strong> ОС переключает процессор между задачами тысячи раз в секунду.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── OS LAYERS ──
+function toggleLayer(id) {
+  const el = document.getElementById('ld-'+id);
+  const all = document.querySelectorAll('.layer-detail');
+  const allL = document.querySelectorAll('.layer');
+  const isOpen = el.classList.contains('show');
+  all.forEach(e=>e.classList.remove('show'));
+  allL.forEach(l=>l.classList.remove('active'));
+  if(!isOpen){
+    el.classList.add('show');
+    el.previousElementSibling.classList.add('active');
+  }
+}
+
+// ── PROCESS MANAGER ──
+let pidCounter = 1000;
+let procs = [];
+function launchProc(icon, name) {
+  const pid = pidCounter++;
+  const cpu = Math.floor(Math.random()*35)+2;
+  procs.push({pid, icon, name, cpu});
+  renderProcs();
+}
+function killProc(pid) {
+  procs = procs.filter(p=>p.pid!==pid);
+  renderProcs();
+}
+function renderProcs() {
+  const list = document.getElementById('procList');
+  const empty = document.getElementById('procEmpty');
+  if(procs.length===0){
+    list.innerHTML='<div class="proc-empty">Нет запущенных процессов</div>';
+    return;
+  }
+  list.innerHTML = procs.map(p=>`
+    <div class="proc-item" id="proc-${p.pid}">
+      <span class="proc-icon">${p.icon}</span>
+      <div class="proc-info">
+        <div class="proc-name">${p.name}</div>
+        <div class="proc-pid">PID: ${p.pid}</div>
+      </div>
+      <div class="proc-bar-wrap">
+        <div class="proc-bar-track"><div class="proc-bar-fill" style="width:${p.cpu}%"></div></div>
+        <div class="proc-cpu">${p.cpu}% CPU</div>
+      </div>
+      <button class="proc-kill" onclick="killProc(${p.pid})" title="Завершить процесс">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── FILE TREE ──
+const fsData = {
+  name:'💻 C:\\', children:[
+    { name:'📁 Windows', children:[
+      { name:'📁 System32', children:[
+        {name:'📄 kernel32.dll'},{name:'📄 user32.dll'}
+      ]},
+      {name:'📄 explorer.exe'}
+    ]},
+    { name:'📁 Users', children:[
+      { name:'📁 Иван', children:[
+        { name:'📁 Documents', children:[
+          {name:'📄 диплом.docx'},{name:'📄 резюме.pdf'}
+        ]},
+        { name:'📁 Downloads', children:[
+          {name:'📄 photo.jpg'},{name:'📄 installer.exe'}
+        ]},
+        {name:'📁 Desktop', children:[{name:'📄 заметки.txt'}]}
+      ]}
+    ]},
+    { name:'📁 Program Files', children:[
+      {name:'📁 Google', children:[{name:'📁 Chrome', children:[{name:'📄 chrome.exe'}]}]},
+      {name:'📁 Microsoft Office', children:[{name:'📄 winword.exe'}]}
+    ]}
+  ]
+};
+
+let currentPath = 'C:\\';
+function buildTree(node, path) {
+  const div = document.createElement('div');
+  if(node.children){
+    const folderDiv = document.createElement('div');
+    folderDiv.className = 'fs-folder';
+    folderDiv.innerHTML = `<span style="color:var(--muted);font-size:12px;" class="arr">▶</span> <span class="fs-name">${node.name}</span>`;
+    const childDiv = document.createElement('div');
+    childDiv.className = 'fs-children';
+    node.children.forEach(c=>childDiv.appendChild(buildTree(c, path+'\\'+node.name)));
+    folderDiv.onclick = (e)=>{
+      e.stopPropagation();
+      childDiv.classList.toggle('open');
+      folderDiv.querySelector('.arr').textContent = childDiv.classList.contains('open')?'▼':'▶';
+      document.getElementById('fsPath').textContent = path+node.name.replace(/[^A-Za-zА-Яа-я0-9\\ :.]/g,'').trim();
+    };
+    div.appendChild(folderDiv);
+    div.appendChild(childDiv);
+  } else {
+    const fileDiv = document.createElement('div');
+    fileDiv.className='fs-file';
+    fileDiv.innerHTML=`<span style="color:var(--muted)">  </span>${node.name}`;
+    fileDiv.onclick=(e)=>{
+      e.stopPropagation();
+      const nm = node.name.replace(/[📄📁]/g,'').trim();
+      document.getElementById('fsPath').textContent = path+'\\'+nm;
+    };
+    div.appendChild(fileDiv);
+  }
+  return div;
+}
+document.getElementById('fsTree').appendChild(buildTree(fsData,''));
+
+// ── STEPS ──
+const steps = [
+  { title:'Двойной клик на иконке', desc:'Вы даёте команду ОС запустить программу.',
+    detail:'ОС получает сигнал от системы ввода (мышь). Она определяет, с каким файлом связана иконка — обычно это .exe на Windows или бинарный файл на Linux/Mac.' },
+  { title:'ОС находит файл программы на диске', desc:'Считывается исполняемый файл (.exe, .app…).',
+    detail:'ОС обращается к файловой системе: читает заголовок файла, чтобы понять, сколько памяти нужно, какие библиотеки загружать. Весь этот код хранился на диске.' },
+  { title:'Выделение памяти в RAM', desc:'ОС резервирует область оперативной памяти.',
+    detail:'ОС говорит менеджеру памяти: «Зарезерви 200 МБ для нового процесса». Туда будут загружены код программы, её данные и стек вызовов.' },
+  { title:'Создание процесса', desc:'ОС присваивает программе уникальный PID.',
+    detail:'ОС заносит новый процесс в таблицу процессов. PID (например, 4382) — это паспорт процесса. Теперь ОС знает, кто и сколько ресурсов использует.' },
+  { title:'Процессор начинает выполнение', desc:'CPU получает первую инструкцию программы.',
+    detail:'Планировщик ОС ставит процесс в очередь на выполнение. Процессор берёт первую инструкцию из памяти и начинает работу. На экране появляется окно программы.' },
+];
+const sf = document.getElementById('stepsFlow');
+steps.forEach((s,i)=>{
+  const div = document.createElement('div');
+  div.className = 'step-item';
+  div.onclick = ()=>{ div.classList.toggle('active'); };
+  div.innerHTML = `
+    <div class="step-num">${i+1}</div>
+    <div class="step-body">
+      <div class="step-title">${s.title}</div>
+      <div class="step-desc">${s.desc}</div>
+      <div class="step-expand">${s.detail}</div>
+    </div>
+  `;
+  sf.appendChild(div);
+});
+
+// ── LEVEL TABS ──
+function setLevel(l){
+  document.querySelectorAll('.lt').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.lt.'+l).classList.add('active');
+  document.querySelectorAll('.task-group').forEach(g=>g.classList.remove('show'));
+  document.getElementById('group-'+l).classList.add('show');
+}
+
+// ── TASK OPT ──
+const msgs = {
+  'e1': { ok:'Правильно! ОС — главная программа: управляет ресурсами, обеспечивает интерфейс и безопасность.', no:'Нет. ОС (Windows, macOS, Linux) — это главная программа-управляющий всего компьютера.' },
+  'e2': { ok:'Верно! Windows 11 — операционная система. Chrome, Word, Photoshop — прикладные программы.', no:'Нет. Chrome, Word и Photoshop — прикладные программы. ОС — это Windows, macOS или Linux.' },
+  'e3': { ok:'Именно! Незасохранённые данные живут в RAM. При закрытии программы — они исчезают.', no:'Нет. Пока вы не нажали «Сохранить», изменения существуют только в RAM и пропадают при закрытии.' },
+  'm1': { ok:'Правильно! Это называется вытесняющая многозадачность — ОС делит время процессора между процессами.', no:'Не совсем. Процессор один (или несколько ядер), но ОС переключает его между задачами тысячи раз в секунду.' },
+  'm2': { ok:'Верно! C:\\ — корень диска C, с которого начинается вся файловая система Windows.', no:'Нет. C:\\ означает корень (начало) диска C. Весь путь читается слева направо от корня к файлу.' },
+  'h1': { ok:'Правильно! Это называется «кольца защиты» — архитектурное решение CPU. Программы работают в «пользовательском режиме» без прямого доступа к железу.', no:'Нет. Причина архитектурная и защитная: если любая программа имела бы прямой доступ к железу, один вирус мог бы уничтожить всё.' },
+  'h2': { ok:'Правильно! Механизм подкачки (swap) — ОС переносит редко используемые данные из RAM на диск. Компьютер замедляется, но не падает.', no:'Нет. ОС использует файл подкачки (swap): часть данных из RAM «выгружается» на диск. Это медленно, но программы продолжают работать.' },
+};
+function tOpt(btn, gid, correct) {
+  const opts = btn.parentElement.querySelectorAll('.task-opt');
+  if([...opts].some(o=>o.disabled)) return;
+  opts.forEach(o=>o.disabled=true);
+  btn.classList.add(correct?'correct':'wrong');
+  if(!correct) opts.forEach(o=>{ if(o.getAttribute('onclick')&&o.getAttribute('onclick').includes(',true,')) o.classList.add('correct'); });
+  const fb = document.getElementById('fb-'+gid);
+  const m = msgs[gid];
+  fb.className='task-feedback '+(correct?'ok':'no');
+  fb.textContent = (correct?'✓ ':'✗ ') + (m ? (correct?m.ok:m.no) : (correct?'Правильно!':'Не совсем.'));
+}
+
+// ── ORDER TASK ──
+const correctOrder = [
+  'Двойной клик — команда ОС',
+  'ОС находит .exe файл на диске',
+  'ОС выделяет память в RAM',
+  'Создаётся процесс с PID',
+  'CPU начинает выполнение кода',
+];
+let orderItems = [...correctOrder].sort(()=>Math.random()-.5);
+let dragging = null;
+
+function renderOrder() {
+  const ol = document.getElementById('orderList');
+  ol.innerHTML = '';
+  orderItems.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className='order-item';
+    div.draggable=true;
+    div.dataset.index=i;
+    div.innerHTML=`<span class="order-handle">⠿</span><span class="order-num">${i+1}</span>${item}`;
+    div.addEventListener('dragstart',e=>{ dragging=i; div.classList.add('dragging'); });
+    div.addEventListener('dragend',()=>{ div.classList.remove('dragging'); dragging=null; renderOrder(); });
+    div.addEventListener('dragover',e=>{ e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave',()=>div.classList.remove('drag-over'));
+    div.addEventListener('drop',e=>{
+      e.preventDefault();
+      div.classList.remove('drag-over');
+      if(dragging===null||dragging===i) return;
+      const moved = orderItems.splice(dragging,1)[0];
+      orderItems.splice(i,0,moved);
+      renderOrder();
+    });
+    ol.appendChild(div);
+  });
+}
+renderOrder();
+
+function checkOrder(){
+  const correct = orderItems.every((item,i)=>item===correctOrder[i]);
+  const fb = document.getElementById('fb-order');
+  fb.className='task-feedback '+(correct?'ok':'no');
+  fb.textContent = correct
+    ? '✓ Отлично! Порядок верный: клик → поиск файла → выделение памяти → создание процесса → выполнение.'
+    : '✗ Не совсем. Попробуйте ещё раз. Подсказка: сначала ОС должна найти файл, затем выделить для него память.';
+}
+
+// ── TEXT CHECK ──
+function checkText(){
+  const val = document.getElementById('inp-h3').value.toLowerCase();
+  const keywords = ['открыт','open source','бесплатн','свободн','код','исходн','kernel','ядро','unix','сервер'];
+  const ok = keywords.some(k=>val.includes(k));
+  const fb = document.getElementById('fb-h3');
+  fb.className='task-feedback '+(ok?'ok':'no');
+  fb.textContent = ok
+    ? '✓ Отличный ответ! Linux — это open source ОС: её исходный код открыт, она бесплатна и разрабатывается сообществом. Windows и macOS — проприетарные (закрытые) системы.'
+    : '✗ Попробуйте ещё. Ключевое: Linux — открытый исходный код (open source), бесплатен, разрабатывается сообществом. Windows и macOS — закрытые коммерческие системы.';
+}
+</script>
+</body>
+</html>
