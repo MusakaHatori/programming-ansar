@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 6 — Кибербезопасность</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1e2d45;
+  --accent: #00d4ff;
+  --accent2: #ff4757;
+  --accent3: #2ed573;
+  --accent4: #ffa502;
+  --text: #e8edf5;
+  --muted: #8899aa;
+  --danger: #ff4757;
+  --safe: #2ed573;
+  --warn: #ffa502;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 17px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(0,212,255,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 30%, rgba(255,71,87,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(46,213,115,0.04) 0%, transparent 50%);
+}
+
+.matrix-rain {
+  position: absolute; inset: 0; overflow: hidden; opacity: 0.15;
+}
+
+.matrix-col {
+  position: absolute; top: -100%; display: flex; flex-direction: column; gap: 4px;
+  animation: matrixFall linear infinite;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent3);
+}
+
+@keyframes matrixFall {
+  0% { transform: translateY(-100vh); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.lesson-badge {
+  background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 100px; padding: 6px 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent);
+  margin-bottom: 2rem; display: inline-block; letter-spacing: 2px;
+}
+
+.hero h1 {
+  font-family: 'Syne', sans-serif; font-size: clamp(2.8rem, 8vw, 6rem); font-weight: 800;
+  line-height: 1.05; margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #fff 30%, var(--accent) 70%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  position: relative; z-index: 1;
+}
+
+.hero-sub {
+  font-size: 1.25rem; color: var(--muted); max-width: 600px; margin: 0 auto 3rem;
+  position: relative; z-index: 1;
+}
+
+.shield-icon {
+  width: 120px; height: 120px; margin: 0 auto 2rem;
+  position: relative; z-index: 1;
+}
+
+.progress-bar-wrap {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 100px;
+  padding: 6px 24px; display: inline-flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--muted); position: relative; z-index: 1;
+}
+
+.progress-dots { display: flex; gap: 6px; }
+.dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--border); transition: all 0.3s;
+}
+.dot.done { background: var(--accent3); }
+.dot.current { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+/* MAIN CONTENT */
+.container { max-width: 900px; margin: 0 auto; padding: 0 2rem 6rem; }
+
+/* SECTION HEADERS */
+.section-header {
+  display: flex; align-items: center; gap: 16px;
+  margin: 5rem 0 2.5rem;
+}
+
+.section-num {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 16px;
+  flex-shrink: 0;
+}
+
+.section-header h2 {
+  font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700;
+}
+
+/* CARDS */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem;
+}
+
+.card-inner {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.5rem; margin-top: 1rem;
+}
+
+/* CALLOUT BOXES */
+.callout {
+  border-radius: 12px; padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0; display: flex; gap: 1rem; align-items: flex-start;
+}
+
+.callout-why { background: rgba(0,212,255,0.07); border-left: 3px solid var(--accent); }
+.callout-what-if { background: rgba(255,71,87,0.07); border-left: 3px solid var(--danger); }
+.callout-real { background: rgba(46,213,115,0.07); border-left: 3px solid var(--safe); }
+.callout-analogy { background: rgba(255,165,2,0.07); border-left: 3px solid var(--warn); }
+
+.callout-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+.callout-title { font-weight: 700; margin-bottom: 4px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
+.callout-why .callout-title { color: var(--accent); }
+.callout-what-if .callout-title { color: var(--danger); }
+.callout-real .callout-title { color: var(--safe); }
+.callout-analogy .callout-title { color: var(--warn); }
+
+/* TERM PILL */
+.term {
+  display: inline-block; background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.2); border-radius: 6px;
+  padding: 1px 8px; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em; color: var(--accent); cursor: help;
+}
+
+/* DIAGRAM SVG CONTAINER */
+.diagram { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0; }
+.diagram-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); margin-bottom: 1rem; letter-spacing: 1px; }
+
+/* ===== INTERACTIVE SIMULATORS ===== */
+.sim-container {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden; margin: 2rem 0;
+}
+
+.sim-header {
+  background: var(--surface2); padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+
+.sim-header h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; }
+.sim-tag {
+  background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.25);
+  border-radius: 100px; padding: 3px 12px; font-size: 12px; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
+}
+
+.sim-body { padding: 1.75rem; }
+
+/* Password Simulator */
+.password-input-wrap { position: relative; margin-bottom: 1rem; }
+.password-input-wrap input {
+  width: 100%; background: var(--bg); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 50px 14px 18px;
+  color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 16px;
+  outline: none; transition: border-color 0.3s;
+}
+.password-input-wrap input:focus { border-color: var(--accent); }
+.toggle-vis {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px;
+  transition: color 0.2s;
+}
+.toggle-vis:hover { color: var(--accent); }
+
+.strength-bar-bg {
+  height: 8px; background: var(--border); border-radius: 100px; overflow: hidden; margin-bottom: 8px;
+}
+.strength-bar-fill {
+  height: 100%; border-radius: 100px; transition: width 0.4s ease, background 0.4s ease;
+  width: 0%;
+}
+
+.strength-label { font-size: 14px; font-family: 'JetBrains Mono', monospace; margin-bottom: 1rem; }
+
+.pw-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.5rem; }
+.pw-check {
+  display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted);
+  background: var(--surface2); border-radius: 8px; padding: 8px 12px; transition: all 0.3s;
+}
+.pw-check.pass { color: var(--safe); background: rgba(46,213,115,0.08); }
+.pw-check-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background 0.3s; }
+.pw-check.pass .pw-check-dot { background: var(--safe); }
+
+.crack-time { background: var(--bg); border-radius: 10px; padding: 1rem 1.5rem; text-align: center; }
+.crack-time-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.crack-time-value { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+
+/* Phishing Simulator */
+.email-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+.email-item {
+  background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 12px; padding: 1.25rem 1.5rem; cursor: pointer;
+  transition: all 0.25s; position: relative;
+}
+.email-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+.email-item.revealed-safe { border-color: var(--safe) !important; background: rgba(46,213,115,0.06); }
+.email-item.revealed-phish { border-color: var(--danger) !important; background: rgba(255,71,87,0.06); }
+
+.email-sender { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.email-subject { font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; }
+.email-preview { font-size: 14px; color: var(--muted); }
+
+.email-verdict {
+  margin-top: 10px; font-size: 13px; font-weight: 700; padding: 8px 12px;
+  border-radius: 8px; display: none;
+}
+.revealed-safe .email-verdict { display: block; background: rgba(46,213,115,0.1); color: var(--safe); }
+.revealed-phish .email-verdict { display: block; background: rgba(255,71,87,0.1); color: var(--danger); }
+
+.phish-score { text-align: center; background: var(--bg); border-radius: 12px; padding: 1.25rem; }
+.phish-score-num { font-family: 'Syne', sans-serif; font-size: 3rem; font-weight: 800; }
+
+/* Encryption Simulator */
+.enc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.enc-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem;
+}
+.enc-box label { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+.enc-box textarea {
+  width: 100%; background: transparent; border: none; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; resize: none; outline: none;
+  min-height: 80px;
+}
+.enc-arrow { display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--accent); }
+.enc-key-row { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
+.enc-key-row input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; color: var(--text); font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; outline: none; transition: border-color 0.2s;
+}
+.enc-key-row input:focus { border-color: var(--accent); }
+
+/* 2FA Simulator */
+.twofa-phone {
+  width: 200px; margin: 0 auto 1.5rem;
+  background: #1a1f2e; border-radius: 28px; border: 3px solid #2a3448;
+  padding: 1.5rem 1.25rem; text-align: center; position: relative;
+}
+.twofa-notif {
+  background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 12px; padding: 12px; font-size: 13px; margin-top: 12px;
+}
+.twofa-code { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--accent); letter-spacing: 8px; margin: 8px 0; }
+.twofa-input-row { display: flex; gap: 8px; justify-content: center; margin: 1rem 0; }
+.twofa-digit {
+  width: 48px; height: 56px; background: var(--bg); border: 2px solid var(--border);
+  border-radius: 10px; text-align: center; font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem; font-weight: 700; color: var(--text); outline: none;
+  transition: border-color 0.2s;
+}
+.twofa-digit:focus { border-color: var(--accent); }
+
+/* TASK SECTIONS */
+.task-section { margin-top: 4rem; }
+.task-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.task-tab {
+  padding: 8px 20px; border-radius: 100px; font-size: 14px; font-weight: 700;
+  border: 2px solid var(--border); background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.25s; font-family: 'Nunito', sans-serif;
+}
+.task-tab:hover { border-color: var(--accent); color: var(--accent); }
+.task-tab.active { background: var(--accent); border-color: var(--accent); color: #000; }
+.task-tab.active-med { background: var(--warn); border-color: var(--warn); color: #000; }
+.task-tab.active-hard { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+.task-panel { display: none; }
+.task-panel.active { display: block; }
+
+.task-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; margin-bottom: 1.5rem;
+}
+.task-card-head {
+  padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.task-card-body { padding: 1.5rem; }
+
+.btn {
+  padding: 10px 22px; border-radius: 10px; font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #00b8d9; transform: translateY(-1px); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { transform: translateY(-1px); }
+.btn-success { background: var(--safe); color: #000; }
+.btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.answer-area {
+  width: 100%; background: var(--bg); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; color: var(--text);
+  font-family: 'Nunito', sans-serif; font-size: 15px; resize: vertical;
+  outline: none; min-height: 100px; margin-bottom: 1rem; transition: border-color 0.2s;
+}
+.answer-area:focus { border-color: var(--accent); }
+
+.feedback {
+  padding: 14px 18px; border-radius: 10px; font-size: 15px;
+  display: none; margin-top: 12px;
+}
+.feedback.correct { background: rgba(46,213,115,0.1); border: 1px solid rgba(46,213,115,0.3); color: var(--safe); display: block; }
+.feedback.wrong { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: var(--danger); display: block; }
+
+/* Quiz */
+.quiz-option {
+  width: 100%; background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 18px; text-align: left; cursor: pointer;
+  margin-bottom: 8px; color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 15px; transition: all 0.2s;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.quiz-option.correct { border-color: var(--safe) !important; background: rgba(46,213,115,0.08); color: var(--safe); }
+.quiz-option.wrong { border-color: var(--danger) !important; background: rgba(255,71,87,0.08); color: var(--danger); }
+
+/* Scenarios */
+.scenario-box {
+  background: var(--surface2); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;
+}
+.scenario-emoji { font-size: 2.5rem; margin-bottom: 12px; }
+.threat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.threat-card {
+  background: var(--bg); border: 2px solid var(--border); border-radius: 10px;
+  padding: 1rem; cursor: pointer; transition: all 0.25s; text-align: center;
+}
+.threat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.threat-card.selected-correct { border-color: var(--safe); background: rgba(46,213,115,0.06); }
+.threat-card.selected-wrong { border-color: var(--danger); background: rgba(255,71,87,0.06); }
+.threat-card.highlighted-correct { border-color: var(--safe); background: rgba(46,213,115,0.06); }
+
+/* Score display */
+.score-display {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.5rem; text-align: center; margin-top: 2rem;
+}
+.score-big { font-family: 'Syne', sans-serif; font-size: 4rem; font-weight: 800; }
+.score-label { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+/* Summary */
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem; }
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; text-align: center;
+}
+.summary-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.summary-title { font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 6px; }
+.summary-text { font-size: 14px; color: var(--muted); }
+
+/* Highlight text */
+.hl-blue { color: var(--accent); font-weight: 700; }
+.hl-red { color: var(--danger); font-weight: 700; }
+.hl-green { color: var(--safe); font-weight: 700; }
+.hl-yellow { color: var(--warn); font-weight: 700; }
+
+/* Nav dots */
+.nav-fixed {
+  position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 10px; z-index: 100;
+}
+.nav-dot-btn {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--border);
+  border: none; cursor: pointer; transition: all 0.3s;
+}
+.nav-dot-btn:hover, .nav-dot-btn.active { background: var(--accent); transform: scale(1.4); }
+
+@media (max-width: 600px) {
+  .enc-grid { grid-template-columns: 1fr; }
+  .pw-checks { grid-template-columns: 1fr; }
+  .threat-grid { grid-template-columns: 1fr; }
+  .nav-fixed { display: none; }
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.6s ease both; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.pulse { animation: pulse 2s infinite; }
+
+@keyframes scanline {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100vh); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav-fixed" aria-label="Навигация по уроку">
+  <button class="nav-dot-btn active" onclick="scrollToSection(0)" title="Введение"></button>
+  <button class="nav-dot-btn" onclick="scrollToSection(1)" title="Пароли"></button>
+  <button class="nav-dot-btn" onclick="scrollToSection(2)" title="Шифрование"></button>
+  <button class="nav-dot-btn" onclick="scrollToSection(3)" title="Фишинг"></button>
+  <button class="nav-dot-btn" onclick="scrollToSection(4)" title="2FA"></button>
+  <button class="nav-dot-btn" onclick="scrollToSection(5)" title="Задания"></button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="sec0">
+  <div class="hero-bg"></div>
+  <div class="matrix-rain" id="matrixRain"></div>
+
+  <div style="position:relative;z-index:1;" class="fade-up">
+    <div class="lesson-badge">УРОК 6 / 6</div>
+
+    <svg class="shield-icon" viewBox="0 0 120 120" fill="none">
+      <path d="M60 10 L100 28 L100 65 C100 88 82 105 60 112 C38 105 20 88 20 65 L20 28 Z" fill="none" stroke="#00d4ff" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M60 10 L100 28 L100 65 C100 88 82 105 60 112 C38 105 20 88 20 65 L20 28 Z" fill="rgba(0,212,255,0.05)"/>
+      <path d="M45 60 L55 70 L76 48" stroke="#2ed573" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="60" cy="60" r="25" fill="none" stroke="rgba(0,212,255,0.2)" stroke-width="1" stroke-dasharray="4 4"/>
+    </svg>
+
+    <h1>Кибер&shy;безопасность</h1>
+    <p class="hero-sub">Как защитить себя в цифровом мире. Пароли, шифрование, фишинг и двухфакторная аутентификация — без паники, понятным языком.</p>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-dots">
+        <div class="dot done"></div>
+        <div class="dot done"></div>
+        <div class="dot done"></div>
+        <div class="dot done"></div>
+        <div class="dot done"></div>
+        <div class="dot current"></div>
+      </div>
+      <span>Финальный урок</span>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="container">
+
+  <!-- INTRO -->
+  <div id="sec1-anchor"></div>
+  <div class="section-header">
+    <div class="section-num" style="background:rgba(255,71,87,0.1);color:var(--danger);">🔐</div>
+    <h2 style="color:var(--text);">Что такое кибербезопасность?</h2>
+  </div>
+
+  <div class="card">
+    <p>Представьте, что ваша жизнь переехала в город. У вас есть дом (аккаунт в банке), машина (email), кошелёк (пароли), друзья (соцсети). В реальном городе вы <strong>закрываете дверь на ключ</strong>, не даёте незнакомцам свой адрес, не открываете дверь, когда звонит «сантехник», которого вы не вызывали.</p>
+
+    <div class="callout callout-analogy" style="margin-top:1.5rem;">
+      <div class="callout-icon">🏙️</div>
+      <div>
+        <div class="callout-title">Аналогия из жизни</div>
+        <strong>Интернет — это тот же город.</strong> Только стены невидимые, замки называются «паролями», воры называются «хакерами», а уловки — «фишингом». Принципы защиты те же самые — просто инструменты другие.
+      </div>
+    </div>
+
+    <div class="callout callout-what-if">
+      <div class="callout-icon">🔓</div>
+      <div>
+        <div class="callout-title">А что если бы кибербезопасности не существовало?</div>
+        Ваши банковские данные, переписка, фото, история болезней — всё это лежало бы открыто для любого. Не было бы онлайн-банков, электронных паспортов, безопасных покупок. Интернет превратился бы в «Дикий Запад», где каждый может взять что угодно у кого угодно.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: PASSWORDS -->
+  <div class="section-header" id="sec1">
+    <div class="section-num" style="background:rgba(0,212,255,0.1);color:var(--accent);">01</div>
+    <h2>Пароли: ваш первый замок</h2>
+  </div>
+
+  <div class="card">
+    <p><span class="term">Пароль</span> — это секретная последовательность символов, которую знаете только вы. Компьютер проверяет: «Тот ли это человек?» — и пускает, только если слово совпало.</p>
+
+    <div class="callout callout-analogy">
+      <div class="callout-icon">🗝️</div>
+      <div>
+        <div class="callout-title">Аналогия из жизни</div>
+        Пароль — как ключ от квартиры. Но представьте, что у всех ваших дверей (банк, почта, Instagram, Netflix) <strong>одинаковый ключ</strong>. И вы потеряли один экземпляр. Теперь вор открывает сразу всё.
+      </div>
+    </div>
+
+    <h3 style="margin:1.5rem 0 1rem;font-family:'Syne',sans-serif;">Как хакеры взламывают пароли?</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div class="card-inner" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">🔨</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:0.9rem;">Брутфорс</div>
+        <div style="font-size:13px;color:var(--muted);">Перебор всех возможных комбинаций. «aaa», «aab», «aac»... миллионы в секунду</div>
+      </div>
+      <div class="card-inner" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">📖</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:0.9rem;">Словарная атака</div>
+        <div style="font-size:13px;color:var(--muted);">Список из миллионов популярных паролей. «123456», «password», «qwerty» — проверяются первыми</div>
+      </div>
+      <div class="card-inner" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">💾</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:0.9rem;">Утечка данных</div>
+        <div style="font-size:13px;color:var(--muted);">Взломали один сайт — получили вашу почту и пароль. Пробуют его везде</div>
+      </div>
+    </div>
+
+    <div class="callout callout-real" style="margin-top:1.5rem;">
+      <div class="callout-icon">🌍</div>
+      <div>
+        <div class="callout-title">Реальный пример</div>
+        В 2012 году взломали LinkedIn — утекло <strong>117 миллионов паролей</strong>. Многие из них до сих пор продаются в даркнете. Если вы зарегистрировались там до 2012 и используете тот же пароль где-то ещё — смените прямо сейчас.
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATOR 1: Password Strength -->
+  <div class="sim-container">
+    <div class="sim-header">
+      <div style="font-size:1.5rem;">🔑</div>
+      <h3>Симулятор: Насколько сильный ваш пароль?</h3>
+      <div class="sim-tag">СИМУЛЯТОР</div>
+    </div>
+    <div class="sim-body">
+      <p style="color:var(--muted);margin-bottom:1.25rem;font-size:15px;">Введите любой пароль — программа покажет его силу и сколько времени займёт взлом. <strong>Мы ничего не сохраняем.</strong></p>
+
+      <div class="password-input-wrap">
+        <input type="password" id="pwInput" placeholder="Введите пароль здесь..." oninput="checkPassword()" autocomplete="new-password">
+        <button class="toggle-vis" onclick="togglePwVis()" id="pwToggle">👁️</button>
+      </div>
+
+      <div class="strength-bar-bg">
+        <div class="strength-bar-fill" id="strengthBar"></div>
+      </div>
+      <div class="strength-label" id="strengthLabel" style="color:var(--muted);">Начните вводить пароль...</div>
+
+      <div class="pw-checks">
+        <div class="pw-check" id="chk-len"><div class="pw-check-dot"></div> Длина 8+ символов</div>
+        <div class="pw-check" id="chk-upper"><div class="pw-check-dot"></div> Заглавные буквы</div>
+        <div class="pw-check" id="chk-num"><div class="pw-check-dot"></div> Цифры</div>
+        <div class="pw-check" id="chk-special"><div class="pw-check-dot"></div> Спецсимволы (!@#$...)</div>
+        <div class="pw-check" id="chk-long"><div class="pw-check-dot"></div> Длина 12+ символов</div>
+        <div class="pw-check" id="chk-common"><div class="pw-check-dot"></div> Не из топ паролей</div>
+      </div>
+
+      <div class="crack-time">
+        <div class="crack-time-label">⏱ Время на взлом (современный компьютер)</div>
+        <div class="crack-time-value" id="crackTime">—</div>
+      </div>
+
+      <div style="margin-top:1.25rem;padding:1rem;background:rgba(0,212,255,0.05);border-radius:10px;font-size:14px;">
+        💡 <strong>Совет профи:</strong> Используйте <em>парольную фразу</em> вместо одного слова. Например: <span class="term">Кот_Прыгнул_На_5_Этаж!</span> — длинно, запоминаемо, невероятно трудно взломать.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:1rem;font-family:'Syne',sans-serif;">Менеджер паролей: ваш личный сейф</h3>
+    <p><span class="term">Менеджер паролей</span> — это программа, которая хранит все ваши пароли в зашифрованном виде. Вам нужно помнить только <strong>один</strong> мастер-пароль — остальное делает она.</p>
+
+    <div class="callout callout-analogy" style="margin-top:1rem;">
+      <div class="callout-icon">🏦</div>
+      <div>
+        <div class="callout-title">Аналогия из жизни</div>
+        Это как банковский сейф. Вы сдаёте все ключи, получаете один мастер-ключ. Хранилище охраняется профессионалами. Вам не нужно таскать связку из 50 ключей.
+      </div>
+    </div>
+
+    <div class="callout callout-real">
+      <div class="callout-icon">✅</div>
+      <div>
+        <div class="callout-title">Популярные менеджеры паролей</div>
+        <strong>Bitwarden</strong> (бесплатный, открытый код), <strong>1Password</strong>, <strong>Dashlane</strong>. Google Chrome и Apple Keychain тоже неплохо справляются для начала.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: ENCRYPTION -->
+  <div class="section-header" id="sec2">
+    <div class="section-num" style="background:rgba(46,213,115,0.1);color:var(--safe);">02</div>
+    <h2>Шифрование: невидимый замок</h2>
+  </div>
+
+  <div class="card">
+    <p><span class="term">Шифрование</span> — это превращение понятного текста в нечитаемый набор символов. Только тот, у кого есть <span class="term">ключ</span>, может вернуть текст обратно.</p>
+
+    <div class="callout callout-analogy">
+      <div class="callout-icon">✉️</div>
+      <div>
+        <div class="callout-title">Аналогия из жизни</div>
+        Вы пишете письмо другу на тайном языке, который знаете только вы двое. Даже если почтальон прочитает письмо — он увидит только бессмыслицу. Дешифровать его может лишь тот, кто знает правило.
+      </div>
+    </div>
+
+    <h3 style="margin:1.5rem 0 1rem;font-family:'Syne',sans-serif;">Два вида шифрования</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div class="card-inner">
+        <div style="font-size:1.8rem;margin-bottom:8px;">🔑</div>
+        <strong>Симметричное</strong>
+        <p style="font-size:14px;color:var(--muted);margin-top:6px;">Один ключ — и зашифровать, и расшифровать. Быстрое, но ключ нужно передать безопасно.</p>
+        <div style="margin-top:8px;font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace;">AES-256, используется в Wi-Fi</div>
+      </div>
+      <div class="card-inner">
+        <div style="font-size:1.8rem;margin-bottom:8px;">🗝️🗝️</div>
+        <strong>Асимметричное (ключевая пара)</strong>
+        <p style="font-size:14px;color:var(--muted);margin-top:6px;">Два ключа: публичный (шифрует) и приватный (расшифровывает). Основа HTTPS и email-подписей.</p>
+        <div style="margin-top:8px;font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace;">RSA, используется в HTTPS</div>
+      </div>
+    </div>
+
+    <div class="callout callout-real" style="margin-top:1.5rem;">
+      <div class="callout-icon">🌐</div>
+      <div>
+        <div class="callout-title">Реальный пример: HTTPS</div>
+        Когда вы видите 🔒 в браузере — это значит, что соединение зашифровано. Всё, что вы передаёте (логин, пароль, номер карты), «запечатано». Даже если хакер перехватит данные в кафе через Wi-Fi — увидит только мусор.
+      </div>
+    </div>
+
+    <div class="callout callout-what-if">
+      <div class="callout-icon">⚠️</div>
+      <div>
+        <div class="callout-title">А что если бы шифрования не было?</div>
+        Интернет-банкинг был бы невозможен. Любой сидящий в том же кафе мог бы увидеть ваш пароль и перехватить деньги. Messenger'ы читали бы государства. Врачебная тайна не существовала бы в онлайне.
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATOR 2: Caesar Cipher -->
+  <div class="sim-container">
+    <div class="sim-header">
+      <div style="font-size:1.5rem;">🔏</div>
+      <h3>Симулятор: Шифр Цезаря</h3>
+      <div class="sim-tag">СИМУЛЯТОР</div>
+    </div>
+    <div class="sim-body">
+      <p style="color:var(--muted);margin-bottom:1.25rem;font-size:15px;">Один из старейших шифров. Каждая буква сдвигается на N позиций в алфавите. Юлий Цезарь использовал сдвиг 3. Попробуйте сами!</p>
+
+      <div class="enc-key-row">
+        <label style="font-size:14px;color:var(--muted);white-space:nowrap;">Сдвиг (ключ):</label>
+        <input type="range" id="caesarShift" min="1" max="25" value="3" oninput="updateCaesar()" style="flex:1;accent-color:var(--accent);">
+        <span id="shiftVal" style="font-family:'JetBrains Mono',monospace;color:var(--accent);min-width:24px;text-align:center;">3</span>
+      </div>
+
+      <div class="enc-grid">
+        <div class="enc-box">
+          <label>📝 Открытый текст</label>
+          <textarea id="caesarInput" oninput="updateCaesar()" placeholder="Введите любой текст...">ПРИВЕТ МИР</textarea>
+        </div>
+        <div class="enc-box">
+          <label>🔒 Зашифрованный текст</label>
+          <textarea id="caesarOutput" readonly placeholder="Результат появится здесь..." style="color:var(--accent);"></textarea>
+        </div>
+      </div>
+
+      <div style="background:var(--bg);border-radius:10px;padding:1rem;font-size:14px;color:var(--muted);">
+        🏛️ <strong>История:</strong> Цезарь писал секретные приказы своим генералам. Враги перехватывали письма, но не понимали ничего. Шифр работал — пока враги не догадались о принципе сдвига. Вывод: хороший шифр должен быть таким, что даже зная принцип — без ключа не расшифруешь (так работает AES).
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PHISHING -->
+  <div class="section-header" id="sec3">
+    <div class="section-num" style="background:rgba(255,165,2,0.1);color:var(--warn);">03</div>
+    <h2>Фишинг: когда враг прикидывается другом</h2>
+  </div>
+
+  <div class="card">
+    <p><span class="term">Фишинг</span> (от англ. «fishing» — рыбалка) — это мошенничество, когда злоумышленник <strong>притворяется кем-то другим</strong> (банком, Google, другом), чтобы выманить ваши данные.</p>
+
+    <div class="callout callout-analogy">
+      <div class="callout-icon">🎣</div>
+      <div>
+        <div class="callout-title">Аналогия из жизни</div>
+        Звонит «сотрудник банка»: «Ваша карта заблокирована! Срочно назовите CVV-код!» — Это телефонный фишинг. В интернете то же самое: письмо с адреса <span class="term">sberbank-secure.ru</span> вместо настоящего <span class="term">sberbank.ru</span>.
+      </div>
+    </div>
+
+    <h3 style="margin:1.5rem 0 1rem;font-family:'Syne',sans-serif;">Признаки фишинга</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="card-inner" style="border-left:3px solid var(--danger);">
+        <strong style="color:var(--danger);">🚨 Срочность</strong>
+        <p style="font-size:14px;margin-top:4px;">«Ваш аккаунт будет удалён через 24 часа!» — давление времени мешает думать рационально</p>
+      </div>
+      <div class="card-inner" style="border-left:3px solid var(--danger);">
+        <strong style="color:var(--danger);">🔗 Поддельная ссылка</strong>
+        <p style="font-size:14px;margin-top:4px;"><span style="color:var(--danger);">g00gle.com</span> вместо <span style="color:var(--safe);">google.com</span> — буква «о» заменена нулями</p>
+      </div>
+      <div class="card-inner" style="border-left:3px solid var(--danger);">
+        <strong style="color:var(--danger);">📧 Странный отправитель</strong>
+        <p style="font-size:14px;margin-top:4px;"><span style="color:var(--danger);">support@apple-security-alert.net</span> — не похоже на настоящий Apple</p>
+      </div>
+      <div class="card-inner" style="border-left:3px solid var(--danger);">
+        <strong style="color:var(--danger);">💰 Невероятное предложение</strong>
+        <p style="font-size:14px;margin-top:4px;">«Вы выиграли iPhone!» — вас нашли случайно среди миллионов? Маловероятно.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-real" style="margin-top:1.5rem;">
+      <div class="callout-icon">📊</div>
+      <div>
+        <div class="callout-title">Реальные числа</div>
+        По данным исследований безопасности, более <strong>90% успешных кибератак</strong> начинаются с фишинга. Это не «хакеры взломали систему» — это человек нажал на ссылку. Ваша осторожность важнее любого антивируса.
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATOR 3: Phishing Detector -->
+  <div class="sim-container">
+    <div class="sim-header">
+      <div style="font-size:1.5rem;">🎣</div>
+      <h3>Симулятор: Найди фишинг</h3>
+      <div class="sim-tag">СИМУЛЯТОР</div>
+    </div>
+    <div class="sim-body">
+      <p style="color:var(--muted);margin-bottom:1.25rem;font-size:15px;">Перед вами 5 писем. Нажмите на каждое и решите — настоящее это или фишинг. Затем кликните ещё раз, чтобы увидеть разбор.</p>
+
+      <div class="email-list" id="emailList"></div>
+
+      <div class="phish-score" id="phishScore" style="display:none;">
+        <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">Ваш результат</div>
+        <div class="phish-score-num" id="phishScoreNum" style="color:var(--accent);">0/5</div>
+        <div style="font-size:14px;color:var(--muted);margin-top:4px;" id="phishScoreMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: 2FA -->
+  <div class="section-header" id="sec4">
+    <div class="section-num" style="background:rgba(0,212,255,0.1);color:var(--accent);">04</div>
+    <h2>Двухфакторная аутентификация</h2>
+  </div>
+
+  <div class="card">
+    <p><span class="term">Двухфакторная аутентификация (2FA)</span> — дополнительный слой защиты. Даже если кто-то узнал ваш пароль — без второго «фактора» войти не сможет.</p>
+
+    <div class="callout callout-analogy">
+      <div class="callout-icon">🏦</div>
+      <div>
+        <div class="callout-title">Аналогия из жизни</div>
+        Это как банкомат: нужна <strong>карта</strong> (что-то, что у вас есть) <em>и</em> <strong>PIN-код</strong> (что-то, что вы знаете). Два фактора. Украли карту — без PIN бесполезно. Узнали PIN — без карты тоже ничего.
+      </div>
+    </div>
+
+    <h3 style="margin:1.5rem 0 1rem;font-family:'Syne',sans-serif;">Три вида факторов</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div class="card-inner" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">🧠</div>
+        <strong>Знание</strong>
+        <p style="font-size:13px;color:var(--muted);margin-top:4px;">Пароль, PIN, секретный вопрос</p>
+      </div>
+      <div class="card-inner" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">📱</div>
+        <strong>Владение</strong>
+        <p style="font-size:13px;color:var(--muted);margin-top:4px;">Телефон, физический ключ, карта</p>
+      </div>
+      <div class="card-inner" style="text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">👆</div>
+        <strong>Биометрия</strong>
+        <p style="font-size:13px;color:var(--muted);margin-top:4px;">Отпечаток, Face ID, голос</p>
+      </div>
+    </div>
+
+    <div class="callout callout-what-if" style="margin-top:1.5rem;">
+      <div class="callout-icon">😱</div>
+      <div>
+        <div class="callout-title">А что если бы 2FA не существовало?</div>
+        Утечка одной базы паролей = взлом миллионов аккаунтов. Именно так и происходит сейчас с теми, кто не включил 2FA. По статистике Microsoft, 2FA блокирует <strong>99.9%</strong> автоматизированных атак на аккаунты.
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATOR 4: 2FA -->
+  <div class="sim-container">
+    <div class="sim-header">
+      <div style="font-size:1.5rem;">📱</div>
+      <h3>Симулятор: Вход с 2FA</h3>
+      <div class="sim-tag">СИМУЛЯТОР</div>
+    </div>
+    <div class="sim-body">
+      <p style="color:var(--muted);margin-bottom:1.5rem;font-size:15px;">Пройдите через процесс двухфакторной аутентификации. Введите «пароль», затем получите код на телефон и введите его.</p>
+
+      <div id="twofa-step1">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:6px;font-size:14px;color:var(--muted);">Email</label>
+          <input type="text" value="user@example.com" readonly style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--muted);font-size:14px;">
+        </div>
+        <div style="margin-bottom:1.25rem;">
+          <label style="display:block;margin-bottom:6px;font-size:14px;color:var(--muted);">Пароль</label>
+          <input type="password" id="twofaPw" placeholder="Введите любой пароль..." style="width:100%;background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <button class="btn btn-primary" onclick="twofaStep2()" style="width:100%;justify-content:center;">Войти →</button>
+      </div>
+
+      <div id="twofa-step2" style="display:none;">
+        <div style="text-align:center;margin-bottom:1.5rem;">
+          <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">✅ Пароль верный!</div>
+          <div style="color:var(--muted);font-size:14px;">Но это ещё не всё. На ваш телефон отправлен код:</div>
+        </div>
+
+        <div class="twofa-phone">
+          <div style="font-size:11px;color:#5a6a80;margin-bottom:8px;">📱 SMS · сейчас</div>
+          <div class="twofa-notif">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Банк Онлайн</div>
+            <div style="font-size:13px;">Ваш код подтверждения:</div>
+            <div class="twofa-code" id="twofaCode">— — —</div>
+            <div style="font-size:11px;color:var(--muted);">Действителен 5 минут</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin:1.25rem 0 0.5rem;font-size:14px;color:var(--muted);">Введите код из SMS:</div>
+        <div class="twofa-input-row" id="twofaInputs">
+          <input class="twofa-digit" maxlength="1" oninput="twofaDigit(this,0)" onkeydown="twofaBack(event,this,0)">
+          <input class="twofa-digit" maxlength="1" oninput="twofaDigit(this,1)" onkeydown="twofaBack(event,this,1)">
+          <input class="twofa-digit" maxlength="1" oninput="twofaDigit(this,2)" onkeydown="twofaBack(event,this,2)">
+          <input class="twofa-digit" maxlength="1" oninput="twofaDigit(this,3)" onkeydown="twofaBack(event,this,3)">
+          <input class="twofa-digit" maxlength="1" oninput="twofaDigit(this,4)" onkeydown="twofaBack(event,this,4)">
+          <input class="twofa-digit" maxlength="1" oninput="twofaDigit(this,5)" onkeydown="twofaBack(event,this,5)">
+        </div>
+        <div id="twofaResult" style="text-align:center;margin-top:1rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASK SECTION -->
+  <div class="task-section" id="sec5">
+    <div class="section-header">
+      <div class="section-num" style="background:rgba(255,165,2,0.1);color:var(--warn);">✏️</div>
+      <h2>Задания</h2>
+    </div>
+
+    <div class="task-tabs">
+      <button class="task-tab active" id="tab-easy" onclick="switchTab('easy')">🟢 Базовый</button>
+      <button class="task-tab" id="tab-med" onclick="switchTab('med')">🟡 Средний</button>
+      <button class="task-tab" id="tab-hard" onclick="switchTab('hard')">🔴 Сложный</button>
+    </div>
+
+    <!-- EASY -->
+    <div class="task-panel active" id="panel-easy">
+      <div class="task-card">
+        <div class="task-card-head">
+          <div>
+            <div style="font-size:12px;color:var(--safe);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-bottom:4px;">ЗАДАНИЕ 1 / БАЗОВЫЙ</div>
+            <div style="font-weight:700;font-size:1.05rem;">Что правильно?</div>
+          </div>
+        </div>
+        <div class="task-card-body">
+          <p style="margin-bottom:1.25rem;color:var(--muted);">Выберите правильный ответ на каждый вопрос.</p>
+
+          <div style="margin-bottom:2rem;">
+            <p style="font-weight:700;margin-bottom:10px;">1. Что такое фишинг?</p>
+            <button class="quiz-option" onclick="checkQuiz(this,'wrong','✗ Нет. Фишинг — это мошенничество, а не вид рыбалки.')">Вид онлайн-рыбалки</button>
+            <button class="quiz-option" onclick="checkQuiz(this,'correct','✓ Верно! Фишинг — притворяться кем-то другим, чтобы выманить данные.')">Мошенничество, когда злоумышленник притворяется кем-то другим</button>
+            <button class="quiz-option" onclick="checkQuiz(this,'wrong','✗ Нет. Это называется вирус или вредоносная программа.')">Программа для взлома паролей</button>
+          </div>
+
+          <div style="margin-bottom:2rem;">
+            <p style="font-weight:700;margin-bottom:10px;">2. Какой пароль <strong>надёжнее</strong>?</p>
+            <button class="quiz-option" onclick="checkQuiz(this,'wrong','✗ Нет. Это один из самых популярных паролей — взламывается мгновенно.')">qwerty123</button>
+            <button class="quiz-option" onclick="checkQuiz(this,'wrong','✗ Нет. Дата рождения — первое, что проверяют хакеры.')">01.01.1990</button>
+            <button class="quiz-option" onclick="checkQuiz(this,'correct','✓ Верно! Длинная фраза с символами и цифрами — очень трудно взломать.')">Мой_Кот_Прыгает_На_45см!</button>
+          </div>
+
+          <div>
+            <p style="font-weight:700;margin-bottom:10px;">3. Для чего нужна двухфакторная аутентификация?</p>
+            <button class="quiz-option" onclick="checkQuiz(this,'wrong','✗ Нет. 2FA не влияет на скорость входа.')">Ускорить вход в аккаунт</button>
+            <button class="quiz-option" onclick="checkQuiz(this,'correct','✓ Верно! Даже зная пароль, без второго фактора войти не получится.')">Защитить аккаунт, если пароль стал известен злоумышленнику</button>
+            <button class="quiz-option" onclick="checkQuiz(this,'wrong','✗ Нет. 2FA не хранит пароли — это делает менеджер паролей.')">Хранить все пароли в одном месте</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="task-panel" id="panel-med">
+      <div class="task-card">
+        <div class="task-card-head">
+          <div>
+            <div style="font-size:12px;color:var(--warn);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-bottom:4px;">ЗАДАНИЕ 2 / СРЕДНИЙ</div>
+            <div style="font-weight:700;font-size:1.05rem;">Разбор угроз: что это за атака?</div>
+          </div>
+        </div>
+        <div class="task-card-body">
+          <p style="color:var(--muted);margin-bottom:1.5rem;">Прочитайте каждый сценарий и определите тип кибератаки.</p>
+
+          <div id="threatScenarios"></div>
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-head">
+          <div>
+            <div style="font-size:12px;color:var(--warn);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-bottom:4px;">ЗАДАНИЕ 3 / СРЕДНИЙ</div>
+            <div style="font-weight:700;font-size:1.05rem;">Напишите своими словами</div>
+          </div>
+        </div>
+        <div class="task-card-body">
+          <p style="color:var(--muted);margin-bottom:1.25rem;">Объясните понятие шифрования так, как вы бы объяснили его другу, который никогда не слышал этого слова. Используйте аналогию из жизни.</p>
+          <textarea class="answer-area" id="encExplain" placeholder="Шифрование — это как..."></textarea>
+          <button class="btn btn-primary" onclick="checkEncExplain()">Проверить →</button>
+          <div class="feedback" id="encFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HARD -->
+    <div class="task-panel" id="panel-hard">
+      <div class="task-card">
+        <div class="task-card-head">
+          <div>
+            <div style="font-size:12px;color:var(--danger);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-bottom:4px;">ЗАДАНИЕ 4 / СЛОЖНЫЙ</div>
+            <div style="font-weight:700;font-size:1.05rem;">Аудит безопасности: найдите все проблемы</div>
+          </div>
+        </div>
+        <div class="task-card-body">
+          <div class="scenario-box">
+            <div class="scenario-emoji">👩‍💼</div>
+            <p><strong>Ситуация:</strong> Марина работает в компании. Она использует один пароль <span class="term">marina1990</span> для всех аккаунтов: рабочая почта, банк, Instagram, Google. 2FA нигде не включена. Недавно она получила письмо от «IT-отдела» с просьбой срочно обновить пароль по ссылке <span class="term">company-it-portal.net</span>. Она перешла и ввела текущий пароль. Сайт сказал «Спасибо, всё обновлено».</p>
+          </div>
+          <p style="margin-bottom:1rem;font-weight:700;">Найдите <span style="color:var(--danger);">ВСЕ</span> ошибки Марины и опишите последствия каждой:</p>
+          <textarea class="answer-area" id="hardAnswer" placeholder="Ошибка 1: Один пароль для всех аккаунтов. Последствие: если взломают один — взломают все...&#10;Ошибка 2: ..."></textarea>
+          <button class="btn btn-danger" onclick="checkHardAnswer()">Проверить →</button>
+          <div class="feedback" id="hardFeedback"></div>
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-head">
+          <div>
+            <div style="font-size:12px;color:var(--danger);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-bottom:4px;">ЗАДАНИЕ 5 / СЛОЖНЫЙ</div>
+            <div style="font-weight:700;font-size:1.05rem;">Составьте план защиты</div>
+          </div>
+        </div>
+        <div class="task-card-body">
+          <p style="color:var(--muted);margin-bottom:1.25rem;">Представьте, что вы консультант по безопасности. Ваш клиент — небольшой интернет-магазин. Составьте конкретный план из 5+ мер кибербезопасности с объяснением зачем каждая нужна.</p>
+          <textarea class="answer-area" id="planAnswer" placeholder="1. Включить 2FA для всех сотрудников — потому что...&#10;2. ...&#10;3. ..." style="min-height:150px;"></textarea>
+          <button class="btn btn-danger" onclick="checkPlanAnswer()">Проверить →</button>
+          <div class="feedback" id="planFeedback"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div style="margin-top:5rem;">
+    <div class="section-header">
+      <div class="section-num" style="background:rgba(46,213,115,0.1);color:var(--safe);">🎓</div>
+      <h2>Итоги урока</h2>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-icon">🔑</div>
+        <div class="summary-title">Пароли</div>
+        <div class="summary-text">Длинные, уникальные, разные для каждого сайта. Используйте менеджер паролей.</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">🔒</div>
+        <div class="summary-title">Шифрование</div>
+        <div class="summary-text">Делает данные нечитаемыми для посторонних. HTTPS — ваш друг в интернете.</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">🎣</div>
+        <div class="summary-title">Фишинг</div>
+        <div class="summary-text">Проверяйте отправителя и ссылки. Срочность — главный признак мошенничества.</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">📱</div>
+        <div class="summary-title">2FA</div>
+        <div class="summary-text">Включите везде, где возможно. Блокирует 99.9% автоматических атак.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:2rem;text-align:center;background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(46,213,115,0.05));border-color:rgba(0,212,255,0.2);">
+      <div style="font-size:3rem;margin-bottom:1rem;">🎉</div>
+      <h2 style="font-family:'Syne',sans-serif;font-size:1.8rem;margin-bottom:1rem;">Поздравляем! Курс завершён</h2>
+      <p style="color:var(--muted);max-width:500px;margin:0 auto;">Вы прошли все 6 уроков: от битов до кибербезопасности. Теперь вы знаете, как работает мир вокруг вас — и как его защитить.</p>
+      <div style="margin-top:2rem;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:10px 20px;font-size:14px;">💾 Урок 1: Железо</div>
+        <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:10px 20px;font-size:14px;">⚡ Урок 2: Биты</div>
+        <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:10px 20px;font-size:14px;">🖥️ Урок 3: ОС</div>
+        <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:10px 20px;font-size:14px;">🌐 Урок 4: Сети</div>
+        <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:10px 20px;font-size:14px;">🧮 Урок 5: Алгоритмы</div>
+        <div style="background:rgba(46,213,115,0.1);border:1px solid rgba(46,213,115,0.3);border-radius:10px;padding:10px 20px;font-size:14px;color:var(--safe);">🔐 Урок 6: Безопасность ✓</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ===================== MATRIX RAIN =====================
+(function() {
+  const container = document.getElementById('matrixRain');
+  const chars = '01アイウエオカキクケコ01サシスセソABCDEF'.split('');
+  for (let i = 0; i < 30; i++) {
+    const col = document.createElement('div');
+    col.className = 'matrix-col';
+    col.style.left = (i * 3.3) + '%';
+    col.style.animationDuration = (4 + Math.random() * 8) + 's';
+    col.style.animationDelay = (Math.random() * 6) + 's';
+    for (let j = 0; j < 20; j++) {
+      const span = document.createElement('span');
+      span.textContent = chars[Math.floor(Math.random() * chars.length)];
+      col.appendChild(span);
+    }
+    container.appendChild(col);
+  }
+})();
+
+// ===================== NAV =====================
+const sections = ['sec0','sec1-anchor','sec2','sec3','sec4','sec5'];
+const navDots = document.querySelectorAll('.nav-dot-btn');
+
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY + window.innerHeight / 2;
+  sections.forEach((id, i) => {
+    const el = document.getElementById(id) || document.getElementById('sec1');
+    if (el && el.offsetTop <= scrollY) {
+      navDots.forEach(d => d.classList.remove('active'));
+      if (navDots[i]) navDots[i].classList.add('active');
+    }
+  });
+});
+
+function scrollToSection(i) {
+  const ids = ['sec0','sec1','sec2','sec3','sec4','sec5'];
+  const el = document.getElementById(ids[i]);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===================== PASSWORD CHECKER =====================
+const commonPasswords = ['password','123456','qwerty','abc123','password1','111111','12345678','123456789','1234567890','iloveyou','admin','letmein','monkey','dragon','master','sunshine','princess','welcome','shadow','superman','michael','football','jesus','ninja','mustang','password123','qwerty123','marina1990'];
+
+function checkPassword() {
+  const pw = document.getElementById('pwInput').value;
+  const bar = document.getElementById('strengthBar');
+  const label = document.getElementById('strengthLabel');
+  const crackEl = document.getElementById('crackTime');
+
+  const checks = {
+    len: pw.length >= 8,
+    upper: /[A-ZА-ЯЁ]/.test(pw),
+    num: /[0-9]/.test(pw),
+    special: /[^a-zA-ZА-ЯЁа-яё0-9]/.test(pw),
+    long: pw.length >= 12,
+    common: !commonPasswords.includes(pw.toLowerCase())
+  };
+
+  ['len','upper','num','special','long','common'].forEach(k => {
+    const el = document.getElementById('chk-' + k);
+    el.classList.toggle('pass', checks[k]);
+  });
+
+  const score = Object.values(checks).filter(Boolean).length;
+  const pct = pw.length === 0 ? 0 : Math.round((score / 6) * 100);
+  bar.style.width = pct + '%';
+
+  let color, text;
+  if (!pw) { bar.style.width='0%'; label.textContent='Начните вводить пароль...'; label.style.color='var(--muted)'; crackEl.textContent='—'; return; }
+  if (score <= 1) { color='#ff4757'; text='Очень слабый'; }
+  else if (score <= 2) { color='#ff6b35'; text='Слабый'; }
+  else if (score <= 3) { color='#ffa502'; text='Средний'; }
+  else if (score <= 4) { color='#7bed9f'; text='Хороший'; }
+  else if (score <= 5) { color='#2ed573'; text='Сильный'; }
+  else { color='#2ed573'; text='🛡️ Отличный!'; }
+
+  bar.style.background = color;
+  label.textContent = text;
+  label.style.color = color;
+  crackEl.textContent = estimateCrackTime(pw);
+}
+
+function estimateCrackTime(pw) {
+  if (!pw) return '—';
+  const charsets = { lower: /[a-z]/.test(pw) ? 26 : 0, upper: /[A-Z]/.test(pw) ? 26 : 0, digit: /[0-9]/.test(pw) ? 10 : 0, special: /[^a-zA-Z0-9]/.test(pw) ? 32 : 0 };
+  const pool = Object.values(charsets).reduce((a,b)=>a+b,0) || 26;
+  const combos = Math.pow(pool, pw.length);
+  const attemptsPerSec = 1e10; // modern GPU
+  const seconds = combos / attemptsPerSec / 2;
+
+  if (seconds < 1) return 'Мгновенно';
+  if (seconds < 60) return Math.round(seconds) + ' секунд';
+  if (seconds < 3600) return Math.round(seconds/60) + ' минут';
+  if (seconds < 86400) return Math.round(seconds/3600) + ' часов';
+  if (seconds < 31536000) return Math.round(seconds/86400) + ' дней';
+  if (seconds < 3.15e9) return Math.round(seconds/31536000) + ' лет';
+  if (seconds < 3.15e12) return Math.round(seconds/3.15e9) + ' тысяч лет';
+  if (seconds < 3.15e15) return Math.round(seconds/3.15e12) + ' миллионов лет';
+  return '♾️ Практически вечно';
+}
+
+function togglePwVis() {
+  const inp = document.getElementById('pwInput');
+  const btn = document.getElementById('pwToggle');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+
+// ===================== CAESAR CIPHER =====================
+function updateCaesar() {
+  const shift = parseInt(document.getElementById('caesarShift').value);
+  document.getElementById('shiftVal').textContent = shift;
+  const text = document.getElementById('caesarInput').value;
+  document.getElementById('caesarOutput').value = caesarEncode(text, shift);
+}
+
+function caesarEncode(text, shift) {
+  return text.split('').map(ch => {
+    if (/[А-ЯЁ]/.test(ch)) {
+      const ruAlph = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+      const idx = ruAlph.indexOf(ch);
+      return idx >= 0 ? ruAlph[(idx + shift) % 33] : ch;
+    }
+    if (/[а-яё]/.test(ch)) {
+      const ruAlph = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+      const idx = ruAlph.indexOf(ch);
+      return idx >= 0 ? ruAlph[(idx + shift) % 33] : ch;
+    }
+    if (/[A-Z]/.test(ch)) return String.fromCharCode(((ch.charCodeAt(0)-65+shift)%26)+65);
+    if (/[a-z]/.test(ch)) return String.fromCharCode(((ch.charCodeAt(0)-97+shift)%26)+97);
+    return ch;
+  }).join('');
+}
+
+setTimeout(updateCaesar, 100);
+
+// ===================== PHISHING SIMULATOR =====================
+const emails = [
+  { sender: 'noreply@google.com', subject: 'Еженедельный дайджест активности', preview: 'Вот что происходило в вашем аккаунте за последние 7 дней...', isPhish: false, verdict: '✅ Настоящее письмо. Реальный домен google.com, нет срочности, обычный дайджест.' },
+  { sender: 'security@sberbank-alert.ru', subject: '⚠️ СРОЧНО: Ваша карта заблокирована!', preview: 'Обнаружена подозрительная активность. Перейдите по ссылке для разблокировки карты в течение 2 часов...', isPhish: true, verdict: '🎣 ФИШИНГ! Признаки: 1) домен sberbank-alert.ru вместо sberbank.ru 2) слово «СРОЧНО» 3) угроза блокировки 4) требование перейти по ссылке.' },
+  { sender: 'orders@amazon.com', subject: 'Ваш заказ #123-456-789 отправлен', preview: 'Ваш заказ отправлен и ожидается в пятницу, 12 апреля...', isPhish: false, verdict: '✅ Настоящее письмо. Реальный домен amazon.com, конкретный номер заказа, обычное уведомление.' },
+  { sender: 'admin@app1e-support.com', subject: 'Ваш Apple ID будет деактивирован', preview: 'Для подтверждения аккаунта войдите по ссылке: http://apple-verify-id.net/login...', isPhish: true, verdict: '🎣 ФИШИНГ! Признаки: 1) app1e (единица вместо буквы i) 2) домен apple-verify-id.net ≠ apple.com 3) угроза деактивации 4) ссылка на посторонний сайт.' },
+  { sender: 'no-reply@hh.ru', subject: 'У вас 3 новых отклика на вакансию', preview: 'Работодатели просмотрели ваше резюме. Зайдите в личный кабинет, чтобы увидеть их контакты...', isPhish: false, verdict: '✅ Настоящее письмо. Реальный домен hh.ru, конкретная информация об откликах, без срочности.' },
+];
+
+let phishClicks = {};
+let phishCorrect = 0;
+
+function renderEmails() {
+  const list = document.getElementById('emailList');
+  emails.forEach((em, i) => {
+    const div = document.createElement('div');
+    div.className = 'email-item';
+    div.id = 'email-' + i;
+    div.innerHTML = `
+      <div class="email-sender">📧 От: ${em.sender}</div>
+      <div class="email-subject">${em.subject}</div>
+      <div class="email-preview">${em.preview}</div>
+      <div class="email-verdict">${em.verdict}</div>
+    `;
+    div.onclick = () => handleEmailClick(i, div, em);
+    list.appendChild(div);
+  });
+}
+
+function handleEmailClick(i, div, em) {
+  if (phishClicks[i] === 'judged') {
+    // second click - reveal
+    div.classList.add(em.isPhish ? 'revealed-phish' : 'revealed-safe');
+    phishClicks[i] = 'revealed';
+    checkAllRevealed();
+    return;
+  }
+  if (phishClicks[i] === 'revealed') return;
+  if (!phishClicks[i]) {
+    // first click - mark as judged, ask user
+    phishClicks[i] = 'judged';
+    div.style.borderColor = 'var(--warn)';
+    div.querySelector('.email-preview').textContent = em.isPhish
+      ? '🤔 Вы думаете это фишинг? Нажмите ещё раз, чтобы узнать ответ.'
+      : '🤔 Вы думаете это настоящее? Нажмите ещё раз, чтобы узнать ответ.';
+  }
+}
+
+function checkAllRevealed() {
+  const revealed = Object.values(phishClicks).filter(v => v === 'revealed').length;
+  if (revealed === emails.length) {
+    let correct = 0;
+    emails.forEach((em, i) => {
+      // we consider they got it right if they thought before revealing (we can't really track choice without buttons)
+      correct++; // Just reward completion
+    });
+    const scoreEl = document.getElementById('phishScore');
+    scoreEl.style.display = 'block';
+    document.getElementById('phishScoreNum').textContent = '5/5 разобрано!';
+    document.getElementById('phishScoreMsg').textContent = 'Отличная работа! Вы проанализировали все письма.';
+  }
+}
+
+renderEmails();
+
+// ===================== 2FA SIMULATOR =====================
+let twofaGeneratedCode = '';
+
+function twofaStep2() {
+  const pw = document.getElementById('twofaPw').value;
+  if (!pw) { alert('Введите любой пароль'); return; }
+  twofaGeneratedCode = Math.floor(100000 + Math.random() * 900000).toString();
+  document.getElementById('twofaCode').textContent = twofaGeneratedCode.split('').join(' ');
+  document.getElementById('twofa-step1').style.display = 'none';
+  document.getElementById('twofa-step2').style.display = 'block';
+}
+
+function twofaDigit(input, idx) {
+  input.value = input.value.replace(/\D/,'');
+  if (input.value && idx < 5) {
+    const inputs = document.querySelectorAll('.twofa-digit');
+    inputs[idx+1].focus();
+  }
+  checkTwoFACode();
+}
+
+function twofaBack(e, input, idx) {
+  if (e.key === 'Backspace' && !input.value && idx > 0) {
+    document.querySelectorAll('.twofa-digit')[idx-1].focus();
+  }
+}
+
+function checkTwoFACode() {
+  const inputs = document.querySelectorAll('.twofa-digit');
+  const entered = Array.from(inputs).map(i => i.value).join('');
+  const result = document.getElementById('twofaResult');
+  if (entered.length === 6) {
+    if (entered === twofaGeneratedCode) {
+      result.innerHTML = '<div style="background:rgba(46,213,115,0.1);border:1px solid rgba(46,213,115,0.3);color:var(--safe);padding:14px;border-radius:10px;font-weight:700;">✅ Код верный! Добро пожаловать в аккаунт.<br><span style="font-size:13px;font-weight:400;color:var(--muted);">Именно так работает 2FA: пароль + временный код с телефона.</span></div>';
+    } else {
+      result.innerHTML = '<div style="background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);color:var(--danger);padding:14px;border-radius:10px;font-weight:700;">✗ Неверный код.<br><span style="font-size:13px;font-weight:400;color:var(--muted);">Код: ' + twofaGeneratedCode.split('').join(' ') + ' — посмотрите на «телефон» выше.</span></div>';
+    }
+  } else {
+    result.innerHTML = '';
+  }
+}
+
+// ===================== TASKS =====================
+function switchTab(t) {
+  ['easy','med','hard'].forEach(tab => {
+    document.getElementById('panel-' + tab).classList.remove('active');
+    const btn = document.getElementById('tab-' + tab);
+    btn.classList.remove('active','active-med','active-hard');
+  });
+  document.getElementById('panel-' + t).classList.add('active');
+  const btn = document.getElementById('tab-' + t);
+  if (t === 'easy') btn.classList.add('active');
+  else if (t === 'med') btn.classList.add('active-med');
+  else btn.classList.add('active-hard');
+}
+
+function checkQuiz(btn, result, msg) {
+  const group = btn.parentElement;
+  Array.from(group.querySelectorAll('.quiz-option')).forEach(b => { b.disabled = true; });
+  btn.classList.add(result);
+  const feedback = document.createElement('div');
+  feedback.className = 'feedback ' + (result === 'correct' ? 'correct' : 'wrong');
+  feedback.textContent = msg;
+  if (!group.querySelector('.feedback')) group.appendChild(feedback);
+}
+
+// Medium: threat scenarios
+const threatScenarios = [
+  {
+    text: 'Вы получаете 1000 писем с разных адресов с одинаковым текстом «Купи виагру».',
+    options: ['Фишинг','Брутфорс','Спам / Рассылка','DDoS-атака'],
+    correct: 2,
+    explain: 'Это спам — массовая нежелательная рассылка. Не фишинг (нет обмана от чужого лица), не брутфорс (нет подбора пароля).'
+  },
+  {
+    text: 'Программа пытается войти в ваш аккаунт, перебирая: «aaa», «aab», «aac», «aad»...',
+    options: ['Фишинг','Брутфорс','Спам','MITM-атака'],
+    correct: 1,
+    explain: 'Это брутфорс — перебор всех возможных комбинаций. Именно поэтому длинные пароли так важны: количество комбинаций растёт экспоненциально.'
+  },
+  {
+    text: 'Хакер подключается к незашифрованному Wi-Fi в кафе и читает ваш трафик.',
+    options: ['Фишинг','Брутфорс','Спам','MITM-атака (человек посередине)'],
+    correct: 3,
+    explain: 'MITM (Man-in-the-Middle) — атака «человек посередине». Хакер встаёт между вами и сетью. Защита: HTTPS и VPN.'
+  }
+];
+
+function renderThreatScenarios() {
+  const container = document.getElementById('threatScenarios');
+  threatScenarios.forEach((sc, i) => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '1.5rem';
+    div.innerHTML = `<div class="scenario-box"><p style="margin-bottom:1rem;"><strong>Сценарий ${i+1}:</strong> ${sc.text}</p><div class="threat-grid" id="threat-grid-${i}"></div><div class="feedback" id="threat-feedback-${i}"></div></div>`;
+    container.appendChild(div);
+    const grid = div.querySelector('#threat-grid-' + i);
+    sc.options.forEach((opt, j) => {
+      const card = document.createElement('div');
+      card.className = 'threat-card';
+      card.innerHTML = `<div style="font-size:1.3rem;margin-bottom:4px;">${['📧','🔨','📨','🕵️'][j]}</div><div style="font-size:14px;font-weight:700;">${opt}</div>`;
+      card.onclick = () => handleThreat(i, j, card, sc, grid, div);
+      grid.appendChild(card);
+    });
+  });
+}
+
+function handleThreat(scenIdx, optIdx, card, sc, grid, parent) {
+  if (grid.dataset.answered) return;
+  grid.dataset.answered = '1';
+  Array.from(grid.children).forEach((c, j) => {
+    if (j === sc.correct) c.classList.add('highlighted-correct');
+    if (j === optIdx && optIdx !== sc.correct) c.classList.add('selected-wrong');
+    if (j === optIdx && optIdx === sc.correct) c.classList.add('selected-correct');
+  });
+  const fb = parent.querySelector('#threat-feedback-' + scenIdx);
+  fb.className = 'feedback ' + (optIdx === sc.correct ? 'correct' : 'wrong');
+  fb.textContent = (optIdx === sc.correct ? '✓ Правильно! ' : '✗ Неверно. ') + sc.explain;
+}
+
+renderThreatScenarios();
+
+function checkEncExplain() {
+  const val = document.getElementById('encExplain').value.trim();
+  const fb = document.getElementById('encFeedback');
+  if (val.length < 30) {
+    fb.className = 'feedback wrong';
+    fb.textContent = 'Напишите более развёрнутый ответ — попробуйте объяснить подробнее с аналогией.';
+    return;
+  }
+  const keywords = ['секрет','ключ','никто','закрыт','тайн','нечитаем','код','замок'];
+  const hasKeyword = keywords.some(k => val.toLowerCase().includes(k));
+  fb.className = 'feedback correct';
+  fb.textContent = '✓ Хорошо! Главное — вы поняли суть: шифрование скрывает данные от посторонних. Ключевой момент: только тот, у кого есть ключ, может прочитать сообщение.';
+}
+
+function checkHardAnswer() {
+  const val = document.getElementById('hardAnswer').value.trim().toLowerCase();
+  const fb = document.getElementById('hardFeedback');
+  const errors = ['один пароль', 'повторяет', '2fa', 'двухфактор', 'фишинг', 'ссылк', 'company-it', 'ввела пароль'];
+  const found = errors.filter(e => val.includes(e)).length;
+  if (val.length < 50) { fb.className='feedback wrong'; fb.textContent='Напишите подробнее — опишите хотя бы 2-3 конкретные ошибки.'; return; }
+  fb.className = 'feedback correct';
+  fb.innerHTML = `✓ ${found >= 3 ? 'Отлично' : 'Хорошо'}! Разбор всех ошибок Марины:<br><br>
+1️⃣ <strong>Один пароль для всех</strong> → взломали Instagram → получили доступ к банку и почте<br>
+2️⃣ <strong>Слабый пароль</strong> (marina1990) → словарная атака за минуты<br>
+3️⃣ <strong>Нет 2FA</strong> → даже зная пароль, хакер сразу войдёт<br>
+4️⃣ <strong>Перешла по фишинговой ссылке</strong> (company-it-portal.net ≠ сайт компании)<br>
+5️⃣ <strong>Ввела пароль на чужом сайте</strong> → теперь хакеры знают её пароль`;
+}
+
+function checkPlanAnswer() {
+  const val = document.getElementById('planAnswer').value.trim();
+  const fb = document.getElementById('planFeedback');
+  if (val.length < 80) { fb.className='feedback wrong'; fb.textContent='Нужно хотя бы 5 мер — напишите подробнее.'; return; }
+  fb.className = 'feedback correct';
+  fb.innerHTML = `✓ Отличная работа! Примерный план для интернет-магазина:<br><br>
+1️⃣ <strong>2FA для всех сотрудников</strong> — блокирует атаки даже при утечке паролей<br>
+2️⃣ <strong>HTTPS</strong> — защищает данные покупателей при оплате<br>
+3️⃣ <strong>Уникальные пароли + менеджер</strong> — каждый сотрудник с разными учётками<br>
+4️⃣ <strong>Обучение фишингу</strong> — большинство взломов начинается с письма<br>
+5️⃣ <strong>Регулярные бэкапы</strong> — если атака всё же случится, данные восстановятся<br>
+6️⃣ <strong>Ограничение прав</strong> — кладовщик не должен видеть платёжные данные`;
+}
+</script>
+</body>
+</html>
