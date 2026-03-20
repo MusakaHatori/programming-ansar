@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 5 — Алгоритмы и логика</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #0e0f0d;
+  --surf:  #161814;
+  --card:  #1c1f1a;
+  --bord:  #2a2e28;
+  --bord2: #363b33;
+  --ink:   #e8ede4;
+  --mut:   #6b7566;
+  --dim:   #3a3f36;
+  --grn:   #4ade80;
+  --grn2:  #22c55e;
+  --grnd:  #166534;
+  --grnbg: rgba(74,222,128,.07);
+  --amber: #fbbf24;
+  --red:   #f87171;
+  --blue:  #60a5fa;
+  --purp:  #a78bfa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:'Syne',sans-serif;line-height:1.72;overflow-x:hidden;}
+
+/* scanline texture */
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px);}
+
+.page{max-width:860px;margin:0 auto;padding:64px 24px 120px;position:relative;z-index:1;}
+
+/* ── HEADER ── */
+.header-chip{display:flex;align-items:center;gap:10px;margin-bottom:32px;animation:fadeup .6s ease both;}
+.chip{background:var(--grn);color:#000;font-size:9px;letter-spacing:4px;text-transform:uppercase;
+  font-weight:800;padding:5px 14px;border-radius:2px;}
+.chip-line{flex:1;height:1px;background:var(--bord);}
+.chip-r{font-size:10px;color:var(--mut);letter-spacing:3px;font-family:'JetBrains Mono',monospace;}
+
+h1{font-family:'Instrument Serif',serif;font-size:clamp(52px,8vw,96px);
+  line-height:.92;letter-spacing:-2px;margin-bottom:28px;animation:fadeup .6s .08s ease both;}
+h1 em{font-style:italic;color:var(--grn);}
+h1 .sub{display:block;font-size:clamp(18px,3vw,28px);color:var(--mut);letter-spacing:-0.5px;
+  font-family:'Syne',sans-serif;font-style:normal;font-weight:400;margin-top:8px;}
+
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:52px;animation:fadeup .6s .16s ease both;}
+@media(max-width:540px){.intro-grid{grid-template-columns:1fr;}}
+.intro-card{background:var(--card);border:1px solid var(--bord);border-radius:10px;padding:18px 20px;}
+.intro-card.hl{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.04);}
+.intro-card strong{color:var(--grn);display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.intro-card p{font-size:14px;color:var(--mut);margin:0;line-height:1.6;}
+
+/* TOC */
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:64px;animation:fadeup .6s .22s ease both;}
+.toc a{background:var(--card);border:1px solid var(--bord);color:var(--mut);text-decoration:none;
+  font-size:11px;font-weight:700;padding:7px 14px;border-radius:4px;letter-spacing:.5px;
+  transition:all .15s;font-family:'JetBrains Mono',monospace;}
+.toc a:hover{border-color:var(--grn);color:var(--grn);}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--bord);margin:60px 0;position:relative;}
+.divider::after{content:attr(data-n);position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  background:var(--bg);padding:0 12px;font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace;letter-spacing:2px;}
+
+/* ── SECTION ── */
+.section{margin-bottom:60px;}
+.s-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--grn);font-weight:700;
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;}
+.s-label::before{content:'';width:24px;height:1.5px;background:var(--grn);}
+h2{font-family:'Instrument Serif',serif;font-size:clamp(28px,4.5vw,46px);line-height:1.06;
+  letter-spacing:-.5px;margin-bottom:20px;color:var(--ink);}
+p{font-size:15px;margin-bottom:16px;color:#c8d0c2;line-height:1.75;}
+strong{color:var(--ink);font-weight:700;}
+
+/* ── CALLOUTS ── */
+.why,.what,.note,.real{border-radius:10px;padding:18px 20px;margin:22px 0;
+  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;}
+.why{background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.18);}
+.what{background:rgba(248,113,113,.05);border:1px solid rgba(248,113,113,.18);}
+.note{background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.18);}
+.real{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.18);}
+.ct{font-size:8px;letter-spacing:3px;text-transform:uppercase;font-weight:800;
+  padding:4px 9px;border-radius:2px;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.why  .ct{background:rgba(74,222,128,.15);color:var(--grn);}
+.what .ct{background:rgba(248,113,113,.15);color:var(--red);}
+.note .ct{background:rgba(96,165,250,.15);color:var(--blue);}
+.real .ct{background:rgba(251,191,36,.15);color:var(--amber);}
+.cb{font-size:14px;color:#9aa494;line-height:1.65;}
+.cb strong{color:var(--ink);}
+
+/* ── SVG ILLUS ── */
+.illus{border-radius:12px;overflow:hidden;border:1px solid var(--bord);margin:28px 0;}
+.illus-cap{padding:11px 16px;font-size:12px;color:var(--mut);border-top:1px solid var(--bord);
+  font-family:'JetBrains Mono',monospace;display:flex;gap:8px;align-items:center;}
+.illus-cap::before{content:'//';color:var(--dim);}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0;margin:24px 0;}
+.step{display:grid;grid-template-columns:44px 1fr;gap:0;position:relative;}
+.step-num{width:44px;display:flex;flex-direction:column;align-items:center;}
+.step-circle{width:32px;height:32px;border-radius:50%;background:var(--card);border:2px solid var(--bord2);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+  color:var(--mut);font-family:'JetBrains Mono',monospace;flex-shrink:0;z-index:1;}
+.step.active .step-circle{border-color:var(--grn);color:var(--grn);background:rgba(74,222,128,.1);}
+.step-line{flex:1;width:2px;background:var(--bord);margin:0 auto;}
+.step:last-child .step-line{display:none;}
+.step-body{padding:4px 0 28px 16px;}
+.step-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.step-desc{font-size:14px;color:var(--mut);line-height:1.65;}
+
+/* ── SORT VISUAL ── */
+.sort-section{background:var(--card);border:1px solid var(--bord);border-radius:14px;padding:28px;margin:24px 0;}
+.sort-section h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:4px;}
+.sort-sub{font-size:13px;color:var(--mut);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
+
+/* step-through sort */
+.sbs-wrap{margin-bottom:24px;}
+.sbs-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);font-family:'JetBrains Mono',monospace;margin-bottom:12px;}
+.sbs-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.sbs-cell{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;border:2px solid var(--bord2);background:var(--surf);
+  color:var(--mut);transition:all .35s;font-family:'JetBrains Mono',monospace;flex-shrink:0;}
+.sbs-cell.cmp{border-color:var(--amber);background:rgba(251,191,36,.12);color:var(--amber);}
+.sbs-cell.swap{border-color:var(--red);background:rgba(248,113,113,.12);color:var(--red);}
+.sbs-cell.done{border-color:var(--grn);background:rgba(74,222,128,.1);color:var(--grn);}
+.sbs-explain{font-size:13px;color:var(--mut);min-height:20px;font-family:'JetBrains Mono',monospace;margin-bottom:12px;}
+.sbs-explain span{color:var(--grn);}
+.sbs-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.sbs-btn{background:var(--surf);border:1px solid var(--bord2);color:var(--mut);
+  border-radius:6px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'Syne',sans-serif;transition:all .15s;}
+.sbs-btn:hover{border-color:var(--grn);color:var(--grn);}
+.sbs-btn.primary{background:var(--grn);color:#000;border-color:var(--grn);}
+.sbs-btn.primary:hover{background:var(--grn2);}
+.sbs-counter{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mut);margin-left:auto;padding:8px 0;}
+
+/* race */
+.race-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;}
+@media(max-width:560px){.race-grid{grid-template-columns:1fr;}}
+.race-col h4{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);
+  font-family:'JetBrains Mono',monospace;margin-bottom:12px;}
+.bars{display:flex;align-items:flex-end;gap:5px;height:110px;margin-bottom:8px;}
+.bar{flex:1;border-radius:3px 3px 0 0;transition:height .3s,background .25s;
+  position:relative;min-width:16px;background:var(--dim);}
+.bar.cmp-bar{background:rgba(251,191,36,.7)!important;}
+.bar.done-bar{background:rgba(74,222,128,.75)!important;}
+.bar-lbl{position:absolute;top:-16px;width:100%;text-align:center;font-size:9px;
+  font-weight:700;color:var(--mut);font-family:'JetBrains Mono',monospace;}
+.race-ops{font-family:'Instrument Serif',serif;font-size:36px;color:var(--grn);line-height:1;}
+.race-ops-label{font-size:10px;color:var(--mut);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.race-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.race-btn{background:var(--surf);border:1px solid var(--bord2);color:var(--mut);
+  border-radius:6px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;
+  font-family:'Syne',sans-serif;transition:all .15s;}
+.race-btn:hover{border-color:var(--grn);color:var(--grn);}
+.race-btn.go{background:var(--grn);color:#000;border-color:var(--grn);}
+.race-btn.go:hover{background:var(--grn2);}
+
+/* ── BINARY SEARCH ── */
+.bs-demo{background:var(--card);border:1px solid var(--bord);border-radius:14px;padding:28px;margin:24px 0;}
+.bs-demo h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:4px;}
+.bs-dsub{font-size:13px;color:var(--mut);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
+.bs-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.bs-cell{width:42px;height:42px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;border:1.5px solid var(--bord2);background:var(--surf);
+  color:var(--mut);transition:all .3s;font-family:'JetBrains Mono',monospace;flex-shrink:0;}
+.bs-cell.rng{border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.06);}
+.bs-cell.mid{border-color:var(--amber);background:rgba(251,191,36,.12);color:var(--amber);}
+.bs-cell.out{opacity:.15;}
+.bs-cell.hit{border-color:var(--grn);background:rgba(74,222,128,.12);color:var(--grn);}
+.bs-inp-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.bs-inp{background:var(--surf);border:1.5px solid var(--bord2);border-radius:7px;
+  padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--ink);
+  outline:none;width:130px;transition:border-color .15s;}
+.bs-inp:focus{border-color:var(--grn);}
+.bs-go-btn{background:var(--grn);color:#000;border:none;border-radius:7px;
+  padding:10px 22px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
+.bs-go-btn:hover{background:var(--grn2);}
+.bs-reset-btn{background:var(--surf);border:1px solid var(--bord2);color:var(--mut);border-radius:7px;
+  padding:10px 18px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.bs-reset-btn:hover{border-color:var(--mut);}
+.bs-log{font-size:12px;font-family:'JetBrains Mono',monospace;background:var(--surf);border-radius:8px;
+  padding:12px 14px;max-height:140px;overflow-y:auto;line-height:2;color:var(--mut);}
+.bs-log .hit-line{color:var(--grn);font-weight:600;}
+.bs-log .step-line{color:var(--blue);}
+
+/* ── BIG O ── */
+.bigo-wrap{background:var(--card);border:1px solid var(--bord);border-radius:14px;padding:28px;margin:24px 0;}
+.bigo-wrap h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:4px;}
+.bigo-sub{font-size:13px;color:var(--mut);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
+.o-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
+@media(max-width:500px){.o-cards{grid-template-columns:1fr;}}
+.o-card{border-radius:8px;padding:14px 16px;border:1px solid;}
+.o-c1{background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.2);}
+.o-clog{background:rgba(96,165,250,.05);border-color:rgba(96,165,250,.2);}
+.o-cn{background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.2);}
+.o-cn2{background:rgba(248,113,113,.05);border-color:rgba(248,113,113,.2);}
+.o-badge{font-size:10px;letter-spacing:1px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:6px;}
+.o-c1   .o-badge{color:var(--grn);}
+.o-clog .o-badge{color:var(--blue);}
+.o-cn   .o-badge{color:var(--amber);}
+.o-cn2  .o-badge{color:var(--red);}
+.o-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.o-desc{font-size:12px;color:var(--mut);line-height:1.55;}
+.o-ex{font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:6px;color:var(--dim);}
+.o-c1   .o-ex{color:rgba(74,222,128,.5);}
+.o-clog .o-ex{color:rgba(96,165,250,.5);}
+.o-cn   .o-ex{color:rgba(251,191,36,.5);}
+.o-cn2  .o-ex{color:rgba(248,113,113,.5);}
+
+/* ── DETECTIVE ── */
+.detective{background:var(--card);border:1px solid var(--bord);border-radius:14px;padding:28px;margin:24px 0;}
+.detective h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:4px;}
+.det-sub{font-size:13px;color:var(--mut);margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
+.det-case{background:var(--surf);border-radius:10px;padding:18px 20px;margin-bottom:14px;border:1px solid var(--bord2);}
+.det-case-title{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:8px;font-family:'JetBrains Mono',monospace;}
+.det-case-desc{font-size:14px;color:#9aa494;line-height:1.65;margin-bottom:14px;}
+.det-opts{display:flex;flex-direction:column;gap:7px;}
+.det-opt{background:var(--card);border:1px solid var(--bord2);border-radius:7px;padding:11px 15px;
+  font-size:13px;cursor:pointer;text-align:left;color:#9aa494;transition:all .15s;
+  font-family:'Syne',sans-serif;}
+.det-opt:hover:not(:disabled){border-color:var(--grn);color:var(--ink);}
+.det-opt.ok{border-color:var(--grn)!important;background:rgba(74,222,128,.07);color:var(--grn);}
+.det-opt.ng{border-color:var(--red)!important;background:rgba(248,113,113,.06);color:var(--red);}
+.det-opt:disabled{cursor:default;}
+.det-fb{font-size:13px;margin-top:10px;padding:11px 14px;border-radius:7px;display:none;line-height:1.6;font-family:'JetBrains Mono',monospace;}
+.det-fb.ok{background:rgba(74,222,128,.07);color:var(--grn);border:1px solid rgba(74,222,128,.2);display:block;}
+.det-fb.ng{background:rgba(248,113,113,.06);color:var(--red);border:1px solid rgba(248,113,113,.2);display:block;}
+
+/* ── TASKS ── */
+.lvl-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}
+.lt{padding:7px 18px;border-radius:4px;border:1px solid var(--bord2);
+  font-size:11px;font-weight:700;cursor:pointer;background:var(--card);color:var(--mut);
+  transition:all .15s;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;}
+.lt.e.active{border-color:var(--grn);color:var(--grn);background:rgba(74,222,128,.07);}
+.lt.m.active{border-color:var(--amber);color:var(--amber);background:rgba(251,191,36,.07);}
+.lt.h.active{border-color:var(--red);color:var(--red);background:rgba(248,113,113,.07);}
+.tg{display:none;}.tg.show{display:block;animation:fadeup .3s ease;}
+
+.tc{background:var(--card);border:1px solid var(--bord);border-radius:12px;padding:26px;margin-bottom:12px;}
+.tbadge{display:inline-block;font-size:8px;letter-spacing:3px;text-transform:uppercase;
+  padding:3px 9px;border-radius:2px;font-weight:800;margin-bottom:12px;font-family:'JetBrains Mono',monospace;}
+.tbadge.e{background:rgba(74,222,128,.12);color:var(--grn);border:1px solid rgba(74,222,128,.25);}
+.tbadge.m{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.25);}
+.tbadge.h{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25);}
+.tq{font-size:15px;font-weight:700;margin-bottom:16px;line-height:1.45;color:var(--ink);}
+.topts{display:flex;flex-direction:column;gap:7px;margin-bottom:8px;}
+.topt{background:var(--surf);border:1px solid var(--bord2);border-radius:7px;padding:11px 15px;
+  font-size:14px;cursor:pointer;text-align:left;color:#9aa494;transition:all .15s;font-family:'Syne',sans-serif;}
+.topt:hover:not(:disabled){border-color:var(--grn);color:var(--ink);}
+.topt.ok{border-color:var(--grn)!important;background:rgba(74,222,128,.07);color:var(--grn);}
+.topt.ng{border-color:var(--red)!important;background:rgba(248,113,113,.06);color:var(--red);}
+.topt:disabled{cursor:default;}
+.tinp{background:var(--surf);border:1px solid var(--bord2);border-radius:7px;padding:10px 14px;
+  color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:14px;width:100%;
+  outline:none;transition:border-color .15s;margin-bottom:10px;}
+.tinp:focus{border-color:var(--grn);}
+.chkbtn{background:var(--grn);color:#000;border:none;border-radius:7px;padding:10px 24px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;}
+.chkbtn:hover{background:var(--grn2);}
+.tfb{font-size:13px;margin-top:10px;padding:11px 14px;border-radius:7px;display:none;
+  line-height:1.55;font-family:'JetBrains Mono',monospace;}
+.tfb.ok{background:rgba(74,222,128,.07);color:var(--grn);border:1px solid rgba(74,222,128,.2);display:block;}
+.tfb.ng{background:rgba(248,113,113,.06);color:var(--red);border:1px solid rgba(248,113,113,.2);display:block;}
+.sc{background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.15);border-radius:8px;
+  padding:14px 16px;margin-bottom:14px;font-size:14px;color:#b0946e;line-height:1.65;}
+.sc strong{color:var(--amber);}
+
+/* ── SUMMARY ── */
+.summary{background:var(--card);border:1px solid var(--bord);border-radius:18px;padding:40px;
+  margin-top:60px;position:relative;overflow:hidden;}
+.summary::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(74,222,128,.06),transparent 70%);pointer-events:none;}
+.summary h2{font-family:'Instrument Serif',serif;font-size:30px;color:var(--ink);margin-bottom:24px;}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:520px){.sum-grid{grid-template-columns:1fr;}}
+.sg{background:var(--surf);border:1px solid var(--bord2);border-radius:8px;padding:16px;}
+.sg-k{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--grn);font-weight:700;
+  margin-bottom:7px;font-family:'JetBrains Mono',monospace;}
+.sg-v{font-size:13px;color:var(--mut);line-height:1.55;}
+.sg-v strong{color:var(--ink);}
+
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header-chip">
+  <div class="chip">Урок 05</div>
+  <div class="chip-line"></div>
+  <div class="chip-r">COMPUTER SCIENCE · BASICS</div>
+</div>
+
+<h1>
+  Алгоритмы<br>
+  <em>и логика</em>
+  <span class="sub">Как компьютер думает и принимает решения</span>
+</h1>
+
+<div class="intro-grid">
+  <div class="intro-card hl">
+    <strong>Что вы узнаете</strong>
+    <p>Что такое алгоритм и как его записать. Как работает сортировка — шаг за шагом. Почему одни решения быстрее других и как это измерить.</p>
+  </div>
+  <div class="intro-card">
+    <strong>Связь с прошлым</strong>
+    <p>Уроки 1–4: железо, данные, ОС, сети. Теперь — о том, как компьютер <em>думает</em>. Алгоритм — это язык инструкций для машины.</p>
+  </div>
+</div>
+
+<nav class="toc">
+  <a href="#s1">01 · Что такое алгоритм</a>
+  <a href="#s2">02 · Сортировка</a>
+  <a href="#s3">03 · Поиск</a>
+  <a href="#s4">04 · Скорость (Big O)</a>
+  <a href="#s5">05 · Детектив</a>
+  <a href="#s6">06 · В жизни</a>
+  <a href="#tasks">07 · Задания</a>
+</nav>
+
+<!-- ═══ S1: ЧТО ТАКОЕ АЛГОРИТМ ═══ -->
+<div class="section" id="s1">
+  <div class="s-label">01 · Основы</div>
+  <h2>Что такое алгоритм</h2>
+
+  <p>Представьте, что вы объясняете дорогу другу. «Иди прямо, потом направо, потом ещё раз направо» — это алгоритм. <strong>Алгоритм — это точная последовательность шагов, которая решает задачу и гарантированно заканчивается.</strong></p>
+
+  <p>Слово пришло от имени математика IX века Аль-Хорезми — он первым формализовал правила вычислений. Алгоритмы существовали задолго до компьютеров. Рецепт борща — алгоритм. Правила игры в шахматы — алгоритм. Инструкция сборки IKEA — алгоритм.</p>
+
+  <p>Компьютер ничего не понимает и не додумывает. Он исполняет алгоритм дословно, миллиарды раз в секунду. Именно поэтому алгоритм должен быть <strong>абсолютно точным</strong>: каждый шаг, каждое условие, каждый возможный исход.</p>
+
+  <div class="illus">
+    <svg viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#161814;">
+      <defs><marker id="a1" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6b7566"/></marker></defs>
+
+      <!-- Recipe card -->
+      <rect x="24" y="18" width="220" height="164" rx="8" fill="#1c1f1a" stroke="#2a2e28" stroke-width="1.5"/>
+      <text x="134" y="40" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Рецепт борща</text>
+      <line x1="40" y1="48" x2="228" y2="48" stroke="#2a2e28"/>
+      <g font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7566">
+        <text x="44" y="66">1. Нарезать свёклу</text>
+        <text x="44" y="82">2. Обжарить овощи</text>
+        <text x="44" y="98">3. Добавить бульон</text>
+        <text x="44" y="114">4. Варить 40 минут</text>
+        <text x="44" y="130">5. Добавить капусту</text>
+        <text x="44" y="146">6. Проверить вкус</text>
+        <text x="44" y="162">7. Подать со сметаной</text>
+      </g>
+      <text x="134" y="178" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#4ade80" font-weight="700" letter-spacing="1">АЛГОРИТМ ✓</text>
+
+      <!-- Arrow -->
+      <line x1="268" y1="100" x2="308" y2="100" stroke="#2a2e28" stroke-width="1.5" marker-end="url(#a1)"/>
+      <text x="288" y="94" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#3a3f36">=</text>
+
+      <!-- Code card -->
+      <rect x="312" y="18" width="240" height="164" rx="8" fill="#0e0f0d" stroke="#2a2e28" stroke-width="1.5"/>
+      <text x="432" y="40" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Программа</text>
+      <line x1="328" y1="48" x2="536" y2="48" stroke="#1c1f1a"/>
+      <g font-family="JetBrains Mono,monospace" font-size="11">
+        <text x="328" y="66" fill="#a78bfa">function</text><text x="400" y="66" fill="#4ade80"> сварить_борщ():</text>
+        <text x="340" y="84" fill="#60a5fa">  нарезать</text><text x="420" y="84" fill="#6b7566">(свёкла)</text>
+        <text x="340" y="100" fill="#60a5fa">  обжарить</text><text x="422" y="100" fill="#6b7566">(овощи)</text>
+        <text x="340" y="116" fill="#60a5fa">  варить</text><text x="405" y="116" fill="#6b7566">(40, "мин")</text>
+        <text x="340" y="132" fill="#a78bfa">  пока</text><text x="385" y="132" fill="#6b7566"> вкус != "норм":</text>
+        <text x="352" y="148" fill="#60a5fa">    добавить</text><text x="430" y="148" fill="#6b7566">(соль)</text>
+        <text x="340" y="164" fill="#60a5fa">  подать</text><text x="405" y="164" fill="#6b7566">(сметана)</text>
+      </g>
+      <text x="432" y="178" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#4ade80" font-weight="700" letter-spacing="1">АЛГОРИТМ ✓</text>
+
+      <!-- Arrow -->
+      <line x1="576" y1="100" x2="616" y2="100" stroke="#2a2e28" stroke-width="1.5" marker-end="url(#a1)"/>
+      <text x="596" y="94" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#3a3f36">=</text>
+
+      <!-- Same thing -->
+      <rect x="620" y="18" width="220" height="164" rx="8" fill="#1c1f1a" stroke="#4ade80" stroke-width="1.5"/>
+      <text x="730" y="50" text-anchor="middle" font-family="Instrument Serif,serif" font-size="16" fill="#e8ede4">Одно и то же</text>
+      <g font-family="JetBrains Mono,monospace" font-size="11" text-anchor="middle" fill="#6b7566">
+        <text x="730" y="80">Точная последовательность</text>
+        <text x="730" y="98">шагов</text>
+        <text x="730" y="122">Гарантированный</text>
+        <text x="730" y="140">результат</text>
+        <text x="730" y="164">Конечность</text>
+      </g>
+    </svg>
+    <div class="illus-cap">Рецепт и программа — структурно одно и то же. Компьютер просто исполняет быстрее.</div>
+  </div>
+
+  <div class="why">
+    <span class="ct">Почему так</span>
+    <div class="cb">Компьютер — буквальная машина без здравого смысла. Он не может «догадаться» что делать, если встретит незнакомую ситуацию. Именно поэтому хороший алгоритм описывает <strong>все возможные случаи</strong>, включая ошибки, исключения, крайние ситуации.</div>
+  </div>
+  <div class="what">
+    <span class="ct">А что если нет алгоритма</span>
+    <div class="cb">Программа работает непредсказуемо. Иногда правильно, иногда нет. Это называется <strong>неопределённое поведение</strong> — одна из главных причин багов и уязвимостей. На этом взламывают системы: находят ситуации, которые алгоритм не предусмотрел.</div>
+  </div>
+</div>
+
+<hr class="divider" data-n="02">
+
+<!-- ═══ S2: СОРТИРОВКА ═══ -->
+<div class="section" id="s2">
+  <div class="s-label">02 · Сортировка</div>
+  <h2>Сортировка: как навести порядок</h2>
+
+  <p>Вы открываете список контактов — они уже по алфавиту. Выбираете «сортировать по цене» в интернет-магазине — список перестраивается. За каждым таким действием стоит <strong>алгоритм сортировки</strong>.</p>
+
+  <p>Зачем это нужно? Потому что <strong>отсортированные данные открывают возможности</strong>. Например, бинарный поиск (о нём дальше) работает только в отсортированном списке. База данных ищет запись за миллисекунды именно потому что данные упорядочены. Неупорядоченные данные — это хаос, с которым тяжело работать.</p>
+
+  <p>Придумано более 30 алгоритмов сортировки. Начнём с самого понятного — <strong>пузырьковой сортировки</strong>.</p>
+
+  <div class="steps">
+    <div class="step active">
+      <div class="step-num"><div class="step-circle">1</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Берём первую пару соседей</div>
+        <div class="step-desc">Смотрим на элементы [0] и [1]. Если левый больше правого — меняем их местами. Если нет — оставляем как есть.</div>
+      </div>
+    </div>
+    <div class="step active">
+      <div class="step-num"><div class="step-circle">2</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Сдвигаемся на одну позицию</div>
+        <div class="step-desc">Теперь смотрим на [1] и [2]. Снова сравниваем и меняем если нужно. И так до конца списка.</div>
+      </div>
+    </div>
+    <div class="step active">
+      <div class="step-num"><div class="step-circle">3</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Один «проход» завершён</div>
+        <div class="step-desc">После одного прохода по всему списку — <strong>самое большое число оказывается в конце</strong>. Оно «всплыло», как пузырь. Отсюда и название.</div>
+      </div>
+    </div>
+    <div class="step active">
+      <div class="step-num"><div class="step-circle">4</div><div class="step-line"></div></div>
+      <div class="step-body">
+        <div class="step-title">Повторяем — снова и снова</div>
+        <div class="step-desc">Делаем следующий проход, но уже не трогаем последний элемент (он уже на месте). После каждого прохода ещё одно число «встаёт» на своё место. Продолжаем пока список не отсортирован.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP-BY-STEP VISUALIZER -->
+  <div class="sort-section">
+    <h3>Пузырьковая — пошагово</h3>
+    <div class="sort-sub">// нажимайте «Следующий шаг» и следите за объяснением</div>
+
+    <div class="sbs-wrap">
+      <div class="sbs-title">ТЕКУЩИЙ МАССИВ</div>
+      <div class="sbs-row" id="sbsRow"></div>
+      <div class="sbs-explain" id="sbsExplain">// нажмите «Начать» чтобы запустить</div>
+      <div class="sbs-btns">
+        <button class="sbs-btn primary" onclick="sbsStart()">Начать заново</button>
+        <button class="sbs-btn" id="sbsNext" onclick="sbsNext()" disabled>Следующий шаг →</button>
+        <button class="sbs-btn" id="sbsAuto" onclick="sbsAuto()">▶ Авто</button>
+        <span class="sbs-counter" id="sbsCounter">сравнений: 0</span>
+      </div>
+    </div>
+
+    <hr style="border-color:var(--bord);margin:24px 0;">
+
+    <p style="font-size:14px;color:#9aa494;margin-bottom:16px;">А теперь <strong>сортировка выбором</strong> — другой подход к той же задаче:</p>
+    <p style="font-size:14px;color:#9aa494;margin-bottom:20px;">Каждый раз находим <strong>минимальный элемент</strong> во всём оставшемся списке и ставим его на первое свободное место. Не перемещаем пузырь — ищем нужный элемент целенаправленно.</p>
+
+    <div class="race-grid">
+      <div>
+        <h4>ПУЗЫРЬКОВАЯ</h4>
+        <div class="bars" id="bubbleBars"></div>
+        <div style="margin:6px 0;"><span class="race-ops" id="bubbleOps">—</span><div class="race-ops-label">операций сравнения</div></div>
+        <div class="race-btns">
+          <button class="race-btn go" onclick="runSort('bubble')">▶ Запустить</button>
+          <button class="race-btn" onclick="shuffleRace('bubble')">↺ Перемешать</button>
+        </div>
+      </div>
+      <div>
+        <h4>ВЫБОРОМ</h4>
+        <div class="bars" id="selectionBars"></div>
+        <div style="margin:6px 0;"><span class="race-ops" id="selectionOps">—</span><div class="race-ops-label">операций сравнения</div></div>
+        <div class="race-btns">
+          <button class="race-btn go" onclick="runSort('selection')">▶ Запустить</button>
+          <button class="race-btn" onclick="shuffleRace('selection')">↺ Перемешать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="what">
+    <span class="ct">А что если выбрать плохой алгоритм</span>
+    <div class="cb">Пузырьковая сортировка понятна, но медленна: на 1 000 000 элементах она делает примерно <strong>500 миллиардов сравнений</strong> и займёт ~16 минут. Современный быстрый алгоритм (quicksort) сделает это за 1 секунду. В реальных системах с большими данными выбор алгоритма — разница между «работает» и «сервер лежит».</div>
+  </div>
+</div>
+
+<hr class="divider" data-n="03">
+
+<!-- ═══ S3: ПОИСК ═══ -->
+<div class="section" id="s3">
+  <div class="s-label">03 · Поиск</div>
+  <h2>Поиск: линейный vs бинарный</h2>
+
+  <p>Задача: найти нужный элемент в списке. Кажется простой. Но именно здесь разница между «правильным» и «неправильным» алгоритмом проявляется наиболее наглядно.</p>
+
+  <p><strong>Линейный поиск</strong> — проверяем каждый элемент по очереди слева направо. Нашли — стоп. Дошли до конца — нет такого. Простой, надёжный, работает в любом списке. Но медленный: в худшем случае придётся проверить всё.</p>
+
+  <p><strong>Бинарный поиск</strong> работает по другому принципу. Вы когда-нибудь искали слово в словаре? Открываете середину, видите что ваше слово где-то раньше — листаете назад, снова в середину оставшейся части, и так далее. Это и есть бинарный поиск. Каждый раз <strong>половина вариантов выбывает</strong>.</p>
+
+  <div class="illus">
+    <svg viewBox="0 0 860 185" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#161814;">
+      <!-- Linear -->
+      <text x="215" y="22" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Линейный поиск</text>
+      <text x="215" y="36" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7566">// ищем 47 — проверяем каждый</text>
+      <g>
+        <rect x="24" y="48" width="38" height="38" rx="6" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.4)" stroke-width="1.5"/>
+        <text x="43" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#f87171">12</text>
+        <text x="43" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f87171">✗</text>
+
+        <rect x="70" y="48" width="38" height="38" rx="6" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.4)" stroke-width="1.5"/>
+        <text x="89" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#f87171">25</text>
+        <text x="89" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f87171">✗</text>
+
+        <rect x="116" y="48" width="38" height="38" rx="6" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.4)" stroke-width="1.5"/>
+        <text x="135" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#f87171">33</text>
+        <text x="135" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f87171">✗</text>
+
+        <rect x="162" y="48" width="38" height="38" rx="6" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.4)" stroke-width="1.5"/>
+        <text x="181" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#f87171">41</text>
+        <text x="181" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#f87171">✗</text>
+
+        <rect x="206" y="44" width="44" height="46" rx="6" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.6)" stroke-width="2"/>
+        <text x="228" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#4ade80">47</text>
+        <text x="228" y="100" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" fill="#4ade80">✓</text>
+
+        <rect x="258" y="48" width="38" height="38" rx="6" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="277" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#3a3f36">58</text>
+        <rect x="304" y="48" width="38" height="38" rx="6" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="323" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#3a3f36">71</text>
+        <rect x="350" y="48" width="38" height="38" rx="6" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="369" y="72" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="13" fill="#3a3f36">89</text>
+      </g>
+      <text x="215" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#f87171">5 шагов · худший случай = 8</text>
+      <text x="215" y="143" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7566">1 000 000 элементов → до 1 000 000 проверок</text>
+
+      <!-- Divider -->
+      <line x1="440" y1="14" x2="440" y2="170" stroke="#2a2e28" stroke-width="1" stroke-dasharray="4,4"/>
+
+      <!-- Binary -->
+      <text x="650" y="22" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Бинарный поиск</text>
+      <text x="650" y="36" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7566">// делим пополам — убираем половину</text>
+      <g>
+        <rect x="466" y="48" width="34" height="34" rx="5" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="483" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3a3f36">12</text>
+        <rect x="504" y="48" width="34" height="34" rx="5" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="521" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3a3f36">25</text>
+        <rect x="542" y="48" width="34" height="34" rx="5" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="559" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3a3f36">33</text>
+
+        <rect x="578" y="44" width="40" height="42" rx="6" fill="rgba(251,191,36,.1)" stroke="rgba(251,191,36,.5)" stroke-width="2"/>
+        <text x="598" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#fbbf24">41</text>
+        <text x="598" y="98" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#fbbf24">① 47&gt;41→</text>
+
+        <rect x="620" y="44" width="40" height="42" rx="6" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.6)" stroke-width="2"/>
+        <text x="640" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="12" font-weight="700" fill="#4ade80">47</text>
+        <text x="640" y="98" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#4ade80">② найден!</text>
+
+        <rect x="664" y="48" width="34" height="34" rx="5" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="681" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3a3f36">58</text>
+        <rect x="702" y="48" width="34" height="34" rx="5" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="719" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3a3f36">71</text>
+        <rect x="740" y="48" width="34" height="34" rx="5" fill="#1c1f1a" stroke="#2a2e28"/>
+        <text x="757" y="70" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#3a3f36">89</text>
+      </g>
+      <text x="650" y="125" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#4ade80">2 шага · максимум = 3 (log₂8)</text>
+      <text x="650" y="143" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="#6b7566">1 000 000 элементов → максимум 20 проверок</text>
+    </svg>
+    <div class="illus-cap">Та же задача, разные подходы. При миллионе элементов разница в 50 000 раз.</div>
+  </div>
+
+  <div class="why">
+    <span class="ct">Почему бинарный быстрее</span>
+    <div class="cb">Каждый шаг убирает <strong>половину оставшихся вариантов</strong>. 1 000 000 → 500 000 → 250 000 → ... → 1. Это занимает всего 20 шагов, потому что log₂(1 000 000) ≈ 20. Именно на этом принципе работает поиск в любой большой базе данных — телефонной книге, Google, банковской системе.</div>
+  </div>
+  <div class="what">
+    <span class="ct">Главный подвох</span>
+    <div class="cb">Бинарный поиск работает <strong>только в отсортированном списке</strong>. Если данные перемешаны — деление пополам не имеет смысла. Вот почему сортировка и поиск так тесно связаны: сначала упорядочиваем, потом ищем быстро.</div>
+  </div>
+
+  <!-- BINARY SEARCH DEMO -->
+  <div class="bs-demo">
+    <h3>Симулятор бинарного поиска</h3>
+    <div class="bs-dsub">// введите число от 1 до 100 — наблюдайте пошагово</div>
+    <div class="bs-row" id="bsRow"></div>
+    <div class="bs-inp-row">
+      <input class="bs-inp" type="number" id="bsTarget" placeholder="число 1–100" min="1" max="100">
+      <button class="bs-go-btn" onclick="runBS()">Найти →</button>
+      <button class="bs-reset-btn" onclick="resetBS()">↺ Сброс</button>
+    </div>
+    <div class="bs-log" id="bsLog">// жду ввода...</div>
+  </div>
+</div>
+
+<hr class="divider" data-n="04">
+
+<!-- ═══ S4: BIG O ═══ -->
+<div class="section" id="s4">
+  <div class="s-label">04 · Скорость</div>
+  <h2>Как измерить скорость алгоритма</h2>
+
+  <p>У двух алгоритмов разная скорость. Но как её сравнить? Засечь время на компьютере — не вариант: на разных машинах результат разный. Программисты придумали более умный способ — <strong>нотацию Big O</strong>.</p>
+
+  <p>Big O описывает не точное время, а <strong>как время растёт</strong> при увеличении данных. Например, если список в 10 раз больше — сколько дольше будет работать алгоритм? В 10 раз? В 100? Или столько же?</p>
+
+  <div class="bigo-wrap">
+    <h3>Четыре класса скорости</h3>
+    <div class="bigo-sub">// от быстрого к медленному</div>
+
+    <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+      <defs><marker id="bax" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#3a3f36"/></marker></defs>
+      <line x1="48" y1="210" x2="640" y2="210" stroke="#2a2e28" stroke-width="1.5" marker-end="url(#bax)"/>
+      <line x1="48" y1="210" x2="48" y2="20" stroke="#2a2e28" stroke-width="1.5" marker-end="url(#bax)"/>
+      <text x="645" y="215" font-family="JetBrains Mono,monospace" font-size="10" fill="#3a3f36">n</text>
+      <text x="16" y="120" font-family="JetBrains Mono,monospace" font-size="10" fill="#3a3f36" transform="rotate(-90,16,120)">время</text>
+      <g stroke="#1c1f1a" stroke-width="1">
+        <line x1="48" y1="170" x2="635" y2="170"/>
+        <line x1="48" y1="130" x2="635" y2="130"/>
+        <line x1="48" y1="90"  x2="635" y2="90"/>
+        <line x1="48" y1="50"  x2="635" y2="50"/>
+        <line x1="168" y1="20" x2="168" y2="210"/>
+        <line x1="288" y1="20" x2="288" y2="210"/>
+        <line x1="408" y1="20" x2="408" y2="210"/>
+        <line x1="528" y1="20" x2="528" y2="210"/>
+        <line x1="635" y1="20" x2="635" y2="210"/>
+      </g>
+      <!-- O(1) -->
+      <line x1="48" y1="204" x2="635" y2="204" stroke="#4ade80" stroke-width="2.5"/>
+      <text x="638" y="201" font-family="JetBrains Mono,monospace" font-size="10" fill="#4ade80" font-weight="700">O(1)</text>
+      <!-- O(log n) -->
+      <path d="M48,204 Q200,172 635,138" stroke="#60a5fa" stroke-width="2.5" fill="none"/>
+      <text x="638" y="136" font-family="JetBrains Mono,monospace" font-size="10" fill="#60a5fa" font-weight="700">O(log n)</text>
+      <!-- O(n) -->
+      <line x1="48" y1="204" x2="635" y2="66" stroke="#fbbf24" stroke-width="2.5"/>
+      <text x="638" y="65" font-family="JetBrains Mono,monospace" font-size="10" fill="#fbbf24" font-weight="700">O(n)</text>
+      <!-- O(n²) -->
+      <path d="M48,204 C120,200 240,185 360,155 C450,130 530,88 595,40" stroke="#f87171" stroke-width="2.5" fill="none"/>
+      <text x="578" y="30" font-family="JetBrains Mono,monospace" font-size="10" fill="#f87171" font-weight="700">O(n²)</text>
+      <!-- x labels -->
+      <g font-family="JetBrains Mono,monospace" font-size="9" fill="#3a3f36" text-anchor="middle">
+        <text x="168" y="224">10</text>
+        <text x="288" y="224">100</text>
+        <text x="408" y="224">1K</text>
+        <text x="528" y="224">10K</text>
+        <text x="635" y="224">100K</text>
+      </g>
+    </svg>
+
+    <div class="o-cards">
+      <div class="o-card o-c1">
+        <div class="o-badge">O(1) — константное</div>
+        <div class="o-name">Всегда одинаково быстро</div>
+        <div class="o-desc">Сколько бы данных ни было — время не меняется. Лучший возможный случай.</div>
+        <div class="o-ex">→ взять первый элемент массива, найти в словаре по ключу</div>
+      </div>
+      <div class="o-card o-clog">
+        <div class="o-badge">O(log n) — логарифмическое</div>
+        <div class="o-name">Почти не растёт</div>
+        <div class="o-desc">Данных в 1000 раз больше — шагов в 10 раз больше. Очень хорошо.</div>
+        <div class="o-ex">→ бинарный поиск, поиск в отсортированном дереве</div>
+      </div>
+      <div class="o-card o-cn">
+        <div class="o-badge">O(n) — линейное</div>
+        <div class="o-name">Растёт пропорционально</div>
+        <div class="o-desc">Данных в 2 раза больше — времени в 2 раза больше. Приемлемо.</div>
+        <div class="o-ex">→ линейный поиск, один проход по списку</div>
+      </div>
+      <div class="o-card o-cn2">
+        <div class="o-badge">O(n²) — квадратичное</div>
+        <div class="o-name">Быстро становится проблемой</div>
+        <div class="o-desc">Данных в 2 раза больше — времени в 4 раза больше. На больших данных — катастрофа.</div>
+        <div class="o-ex">→ пузырьковая сортировка, сортировка выбором</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <span class="ct">Подсказка</span>
+    <div class="cb">Big O не говорит «этот алгоритм хороший». Он говорит <strong>как плохо становится при росте данных</strong>. O(n²) алгоритм может быть быстрее O(n) на маленьком наборе данных — и в 1000 раз медленнее на большом. Именно поэтому всегда важно знать: с каким объёмом данных вы работаете?</div>
+  </div>
+</div>
+
+<hr class="divider" data-n="05">
+
+<!-- ═══ S5: DETECTIVE ═══ -->
+<div class="section" id="s5">
+  <div class="s-label">05 · Детектив</div>
+  <h2>Найдите ошибку в алгоритме</h2>
+
+  <p>Лучший способ понять алгоритмы — разбирать реальные провалы. В каждом кейсе ниже что-то пошло не так. Ваша задача — найти причину.</p>
+
+  <div class="detective">
+    <h3>Расследование</h3>
+    <div class="det-sub">// три реальных кейса — выберите причину сбоя</div>
+
+    <!-- Case 1 -->
+    <div class="det-case">
+      <div class="det-case-title">КЕЙС #1 · Сайт интернет-магазина</div>
+      <div class="det-case-desc">Магазин работает нормально с каталогом из 500 товаров. Добавили ещё 500 — итого 1000. Сайт стал в 4 раза медленнее. Добавили ещё 1000 — в 9 раз медленнее. Товары добавляют дальше — скоро сайт встанет.</div>
+      <div class="det-opts">
+        <button class="det-opt" onclick="detAns(this,'d1',false)">Плохой хостинг — мало памяти на сервере</button>
+        <button class="det-opt" onclick="detAns(this,'d1',true)">Алгоритм поиска товаров имеет O(n²) сложность</button>
+        <button class="det-opt" onclick="detAns(this,'d1',false)">Слишком большие картинки товаров</button>
+      </div>
+      <div class="det-fb" id="fd1"></div>
+    </div>
+
+    <!-- Case 2 -->
+    <div class="det-case">
+      <div class="det-case-title">КЕЙС #2 · Приложение доставки</div>
+      <div class="det-case-desc">Новый ресторан добавили в базу данных. Но при поиске по названию — приложение его не находит. Все остальные рестораны находятся мгновенно. Ресторан точно есть в базе — разработчики проверили вручную.</div>
+      <div class="det-opts">
+        <button class="det-opt" onclick="detAns(this,'d2',false)">Ресторан добавили в другой город</button>
+        <button class="det-opt" onclick="detAns(this,'d2',true)">После добавления не пересортировали базу — бинарный поиск его пропускает</button>
+        <button class="det-opt" onclick="detAns(this,'d2',false)">Слишком длинное название ресторана</button>
+      </div>
+      <div class="det-fb" id="fd2"></div>
+    </div>
+
+    <!-- Case 3 -->
+    <div class="det-case">
+      <div class="det-case-title">КЕЙС #3 · Навигатор</div>
+      <div class="det-case-desc">Навигатор строит маршрут из точки А в точку Б за 0.1 секунды. Но иногда предлагает путь через три города вместо прямого. Маршрут рабочий, но не оптимальный. При перезапуске — иногда находит правильный.</div>
+      <div class="det-opts">
+        <button class="det-opt" onclick="detAns(this,'d3',false)">Плохое GPS-соединение</button>
+        <button class="det-opt" onclick="detAns(this,'d3',false)">Алгоритм работает слишком медленно</button>
+        <button class="det-opt" onclick="detAns(this,'d3',true)">Алгоритм останавливается при первом найденном пути, не проверяя все варианты</button>
+      </div>
+      <div class="det-fb" id="fd3"></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" data-n="06">
+
+<!-- ═══ S6: В ЖИЗНИ ═══ -->
+<div class="section" id="s6">
+  <div class="s-label">06 · Контекст</div>
+  <h2>Алгоритмы вокруг вас</h2>
+
+  <p>Алгоритмы не абстракция из учебника. Каждый раз когда вы пользуетесь телефоном — запускаются десятки алгоритмов. Вот несколько примеров из вашей ежедневной жизни.</p>
+
+  <div class="illus">
+    <svg viewBox="0 0 860 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;background:#161814;">
+      <g>
+        <rect x="18" y="18" width="156" height="172" rx="8" fill="#1c1f1a" stroke="#2a2e28" stroke-width="1.5"/>
+        <text x="96" y="48" text-anchor="middle" font-size="30">🔍</text>
+        <text x="96" y="68" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Google Search</text>
+        <line x1="34" y1="76" x2="158" y2="76" stroke="#2a2e28"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#6b7566" text-anchor="middle">
+          <text x="96" y="94">PageRank ранжирует</text>
+          <text x="96" y="108">миллиарды страниц</text>
+          <text x="96" y="122">за &lt;0.5 секунды</text>
+          <text x="96" y="142">индекс обновляется</text>
+          <text x="96" y="156">постоянно</text>
+        </g>
+        <rect x="34" y="170" width="124" height="12" rx="3" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.25)"/>
+        <text x="96" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4ade80">O(n log n) + кэш</text>
+      </g>
+      <g>
+        <rect x="188" y="18" width="156" height="172" rx="8" fill="#1c1f1a" stroke="#2a2e28" stroke-width="1.5"/>
+        <text x="266" y="48" text-anchor="middle" font-size="30">🗺️</text>
+        <text x="266" y="68" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Google Maps</text>
+        <line x1="204" y1="76" x2="328" y2="76" stroke="#2a2e28"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#6b7566" text-anchor="middle">
+          <text x="266" y="94">Алгоритм Дейкстры</text>
+          <text x="266" y="108">ищет кратчайший путь</text>
+          <text x="266" y="122">через миллионы</text>
+          <text x="266" y="136">дорог и перекрёстков</text>
+          <text x="266" y="150">в реальном времени</text>
+        </g>
+        <rect x="204" y="170" width="124" height="12" rx="3" fill="rgba(96,165,250,.1)" stroke="rgba(96,165,250,.25)"/>
+        <text x="266" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#60a5fa">алгоритм Дейкстры</text>
+      </g>
+      <g>
+        <rect x="358" y="18" width="156" height="172" rx="8" fill="#1c1f1a" stroke="#2a2e28" stroke-width="1.5"/>
+        <text x="436" y="48" text-anchor="middle" font-size="30">🎬</text>
+        <text x="436" y="68" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Netflix / YouTube</text>
+        <line x1="374" y1="76" x2="498" y2="76" stroke="#2a2e28"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#6b7566" text-anchor="middle">
+          <text x="436" y="94">Анализирует миллионы</text>
+          <text x="436" y="108">просмотров похожих</text>
+          <text x="436" y="122">людей и предсказывает</text>
+          <text x="436" y="136">что вам понравится</text>
+          <text x="436" y="150">следующим</text>
+        </g>
+        <rect x="374" y="170" width="124" height="12" rx="3" fill="rgba(167,139,250,.1)" stroke="rgba(167,139,250,.25)"/>
+        <text x="436" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#a78bfa">коллаборативная фильтр.</text>
+      </g>
+      <g>
+        <rect x="528" y="18" width="156" height="172" rx="8" fill="#1c1f1a" stroke="#2a2e28" stroke-width="1.5"/>
+        <text x="606" y="48" text-anchor="middle" font-size="30">🔐</text>
+        <text x="606" y="68" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Шифрование</text>
+        <line x1="544" y1="76" x2="668" y2="76" stroke="#2a2e28"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#6b7566" text-anchor="middle">
+          <text x="606" y="94">AES, RSA, SHA-256</text>
+          <text x="606" y="108">защищают переписку,</text>
+          <text x="606" y="122">платежи, пароли</text>
+          <text x="606" y="136">Взлом займёт</text>
+          <text x="606" y="150">миллиарды лет</text>
+        </g>
+        <rect x="544" y="170" width="124" height="12" rx="3" fill="rgba(248,113,113,.1)" stroke="rgba(248,113,113,.25)"/>
+        <text x="606" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#f87171">крипто-алгоритмы</text>
+      </g>
+      <g>
+        <rect x="698" y="18" width="148" height="172" rx="8" fill="#0e0f0d" stroke="#4ade80" stroke-width="1"/>
+        <text x="772" y="48" text-anchor="middle" font-size="30">🤖</text>
+        <text x="772" y="68" text-anchor="middle" font-family="Instrument Serif,serif" font-size="14" fill="#e8ede4">Нейросети / AI</text>
+        <line x1="714" y1="76" x2="830" y2="76" stroke="#2a2e28"/>
+        <g font-family="JetBrains Mono,monospace" font-size="9" fill="#6b7566" text-anchor="middle">
+          <text x="772" y="94">Градиентный спуск</text>
+          <text x="772" y="108">обучает миллиарды</text>
+          <text x="772" y="122">параметров — это</text>
+          <text x="772" y="136">тот же принцип,</text>
+          <text x="772" y="150">только очень большой</text>
+        </g>
+        <rect x="714" y="170" width="124" height="12" rx="3" fill="rgba(74,222,128,.1)" stroke="rgba(74,222,128,.25)"/>
+        <text x="772" y="180" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#4ade80">нейронные сети</text>
+      </g>
+    </svg>
+    <div class="illus-cap">Каждый день вы используете десятки алгоритмов — они скрыты за интерфейсом, но определяют всё.</div>
+  </div>
+
+  <div class="real">
+    <span class="ct">Реальный провал</span>
+    <div class="cb">В 2003 году разработчики SimCity написали симуляцию дорожного трафика с O(n²) сложностью. Маленький город — нормально. Большой — игра зависала на несколько минут при каждом такте. Игроки думали баг. Это был алгоритм. Пришлось переписывать с нуля.</div>
+  </div>
+</div>
+
+<hr class="divider" data-n="07">
+
+<!-- ═══ TASKS ═══ -->
+<div class="section" id="tasks">
+  <div class="s-label">07 · Задания</div>
+  <h2>Проверьте себя</h2>
+  <p style="font-size:14px;color:var(--mut);margin-bottom:22px;">// три уровня — выбирайте свой</p>
+
+  <div class="lvl-tabs">
+    <button class="lt e active" onclick="setLvl('e')">[ БАЗОВЫЙ ]</button>
+    <button class="lt m" onclick="setLvl('m')">[ СРЕДНИЙ ]</button>
+    <button class="lt h" onclick="setLvl('h')">[ СЛОЖНЫЙ ]</button>
+  </div>
+
+  <!-- EASY -->
+  <div class="tg show" id="grp-e">
+    <div class="tc">
+      <div class="tbadge e">БАЗОВЫЙ · 01</div>
+      <div class="tq">Зачем вообще нужна сортировка данных? Что она открывает?</div>
+      <div class="topts">
+        <button class="topt" onclick="ta(this,'e1',false)">Чтобы данные красиво выглядели</button>
+        <button class="topt" onclick="ta(this,'e1',true)">Упорядоченные данные позволяют использовать быстрые алгоритмы поиска и обработки</button>
+        <button class="topt" onclick="ta(this,'e1',false)">Чтобы занимать меньше памяти</button>
+      </div>
+      <div class="tfb" id="fb-e1"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge e">БАЗОВЫЙ · 02</div>
+      <div class="tq">После одного «прохода» пузырьковой сортировки — что гарантированно оказывается на своём месте?</div>
+      <div class="topts">
+        <button class="topt" onclick="ta(this,'e2',false)">Наименьший элемент — в начале</button>
+        <button class="topt" onclick="ta(this,'e2',true)">Наибольший элемент — в конце</button>
+        <button class="topt" onclick="ta(this,'e2',false)">Средний элемент — в середине</button>
+      </div>
+      <div class="tfb" id="fb-e2"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge e">БАЗОВЫЙ · 03</div>
+      <div class="tq">Бинарный поиск в отсортированном списке из 1024 элементов. Сколько максимум шагов? (log₂1024 = 10)</div>
+      <input class="tinp" type="number" id="inp-e3" placeholder="количество шагов">
+      <button class="chkbtn" onclick="chkN('e3',10,0,'Правильно! log₂(1024)=10. 1024 → 512 → 256 → ... → 1. Ровно 10 делений.')">Проверить</button>
+      <div class="tfb" id="fb-e3"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge e">БАЗОВЫЙ · 04</div>
+      <div class="tq">Что означает O(n²) для алгоритма сортировки?</div>
+      <div class="topts">
+        <button class="topt" onclick="ta(this,'e4',false)">Алгоритм работает в два раза медленнее при любом объёме</button>
+        <button class="topt" onclick="ta(this,'e4',false)">Алгоритм использует n² памяти</button>
+        <button class="topt" onclick="ta(this,'e4',true)">Если данных в 2 раза больше — времени нужно в 4 раза больше</button>
+      </div>
+      <div class="tfb" id="fb-e4"></div>
+    </div>
+  </div>
+
+  <!-- MEDIUM -->
+  <div class="tg" id="grp-m">
+    <div class="tc">
+      <div class="tbadge m">СРЕДНИЙ · 01</div>
+      <div class="tq">Пузырьковая сортировка на 100 элементах делает ~5000 сравнений. Сколько она сделает на 1000 элементах?</div>
+      <input class="tinp" type="number" id="inp-m1" placeholder="количество сравнений">
+      <button class="chkbtn" onclick="chkN('m1',500000,0,'Правильно! O(n²): 1000²/2 ≈ 500 000. Данных в 10 раз больше → операций в 100 раз больше. Вот почему O(n²) опасно на больших данных.')">Проверить</button>
+      <div class="tfb" id="fb-m1"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge m">СРЕДНИЙ · 02</div>
+      <div class="tq">
+        <div class="sc"><strong>Сценарий:</strong> Приложение ищет рестораны линейным поиском в базе из 10 000. Каждый день 100 000 запросов. Разработчик предлагает перейти на бинарный (макс. 14 шагов). Насколько уменьшится нагрузка?</div>
+      </div>
+      <input class="tinp" type="text" id="inp-m2" placeholder="Линейный: ___ · Бинарный: ___">
+      <button class="chkbtn" onclick="chkM2()">Проверить</button>
+      <div class="tfb" id="fb-m2"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge m">СРЕДНИЙ · 03</div>
+      <div class="tq">Опишите своими словами: в каком случае линейный поиск лучше бинарного? (минимум 2 ситуации)</div>
+      <textarea class="tinp" style="min-height:80px;" id="inp-m3" placeholder="Ситуация 1: ...&#10;Ситуация 2: ..."></textarea>
+      <button class="chkbtn" onclick="chkM3()">Проверить</button>
+      <div class="tfb" id="fb-m3"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge m">СРЕДНИЙ · 04</div>
+      <div class="tq">Почему после добавления нового элемента в базу данных с бинарным поиском — нужно пересортировать данные?</div>
+      <div class="topts">
+        <button class="topt" onclick="ta(this,'m4',false)">Чтобы новый элемент занял меньше места</button>
+        <button class="topt" onclick="ta(this,'m4',true)">Бинарный поиск предполагает строгий порядок — нарушение порядка делает его ненадёжным</button>
+        <button class="topt" onclick="ta(this,'m4',false)">Это просто правило безопасности</button>
+      </div>
+      <div class="tfb" id="fb-m4"></div>
+    </div>
+  </div>
+
+  <!-- HARD -->
+  <div class="tg" id="grp-h">
+    <div class="tc">
+      <div class="tbadge h">СЛОЖНЫЙ · 01</div>
+      <div class="tq">
+        <div class="sc"><strong>Кейс:</strong> Instagram оценивает 500 постов × 50 параметров, 10 раз в день, для 500 млн пользователей. Сколько вычислений в день? Объясните почему это требует тысячи серверов.</div>
+      </div>
+      <input class="tinp" type="text" id="inp-h1" placeholder="500 × 50 × 10 × 500 000 000 = ?">
+      <button class="chkbtn" onclick="chkH1()">Проверить</button>
+      <div class="tfb" id="fb-h1"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge h">СЛОЖНЫЙ · 02</div>
+      <div class="tq">Напишите псевдокод алгоритма поиска максимального числа в списке [3, 17, 5, 42, 8, 1]. Используйте: НАЧАЛО, переменная «макс», цикл, условие ЕСЛИ, КОНЕЦ. Ответ: 42.</div>
+      <textarea class="tinp" style="min-height:110px;" id="inp-h2" placeholder="НАЧАЛО&#10;макс = первый элемент&#10;ДЛЯ каждого x:&#10;  ЕСЛИ x > макс → макс = x&#10;КОНЕЦ → вывести макс"></textarea>
+      <button class="chkbtn" onclick="chkH2()">Проверить</button>
+      <div class="tfb" id="fb-h2"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge h">СЛОЖНЫЙ · 03</div>
+      <div class="tq">Шазам находит песню среди 10 млн треков за ~3 секунды. Почему это не O(n), и что за механизм позволяет ему быть таким быстрым?</div>
+      <div class="topts">
+        <button class="topt" onclick="ta(this,'h3',false)">O(n) — он параллельно прослушивает все треки на разных серверах</button>
+        <button class="topt" onclick="ta(this,'h3',true)">O(1) — он превращает звук в «отпечаток» и мгновенно ищет его в хэш-таблице</button>
+        <button class="topt" onclick="ta(this,'h3',false)">O(log n) — база треков отсортирована по звуку и используется бинарный поиск</button>
+      </div>
+      <div class="tfb" id="fb-h3"></div>
+    </div>
+    <div class="tc">
+      <div class="tbadge h">СЛОЖНЫЙ · 04</div>
+      <div class="tq">Ваш коллега говорит: «Зачем изучать разные алгоритмы сортировки? Просто всегда используй встроенную sort() в Python — она работает». Что в этом утверждении верно, а что упущено?</div>
+      <textarea class="tinp" id="inp-h4" placeholder="Верно: ...&#10;Упущено: ..."></textarea>
+      <button class="chkbtn" onclick="chkH4()">Проверить</button>
+      <div class="tfb" id="fb-h4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+  <h2>Итоги урока</h2>
+  <div class="sum-grid">
+    <div class="sg">
+      <div class="sg-k">алгоритм</div>
+      <div class="sg-v"><strong>Точная последовательность шагов</strong> с гарантированным результатом. Рецепт и программа — одно и то же.</div>
+    </div>
+    <div class="sg">
+      <div class="sg-k">зачем сортировка</div>
+      <div class="sg-v">Упорядоченные данные открывают <strong>быстрые алгоритмы</strong>. Без сортировки нет бинарного поиска. Без порядка — только перебор.</div>
+    </div>
+    <div class="sg">
+      <div class="sg-k">пузырьковая</div>
+      <div class="sg-v">Сравнивает соседей и «всплывает» максимум. <strong>Просто понять, медленно работать.</strong> O(n²) — убивает на больших данных.</div>
+    </div>
+    <div class="sg">
+      <div class="sg-k">бинарный поиск</div>
+      <div class="sg-v"><strong>1 000 000 → 20 шагов.</strong> Делит пространство поиска пополам. Только в отсортированном списке.</div>
+    </div>
+    <div class="sg">
+      <div class="sg-k">big o</div>
+      <div class="sg-v"><strong>O(1) < O(log n) < O(n) < O(n²).</strong> Описывает как растёт время, а не само время.</div>
+    </div>
+    <div class="sg">
+      <div class="sg-k">главный вывод</div>
+      <div class="sg-v">Правильный алгоритм на 1 млн данных — <strong>секунды</strong>. Неправильный — <strong>часы</strong>. Это и есть программирование.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── STEP-BY-STEP BUBBLE SORT ──
+const SBS_DATA = [64, 34, 25, 12, 22, 11, 90, 45];
+let sbsArr, sbsI, sbsJ, sbsCmp, sbsRunning, sbsAutoTimer;
+
+function sbsStart() {
+  clearTimeout(sbsAutoTimer);
+  sbsArr = [...SBS_DATA];
+  sbsI = 0; sbsJ = 0; sbsCmp = 0; sbsRunning = true;
+  document.getElementById('sbsNext').disabled = false;
+  renderSBS([], []);
+  document.getElementById('sbsExplain').innerHTML = '<span>▶ Начинаем. Массив: [' + sbsArr.join(', ') + ']</span>';
+  document.getElementById('sbsCounter').textContent = 'сравнений: 0';
+}
+
+function renderSBS(cmp=[], done=[]) {
+  const row = document.getElementById('sbsRow');
+  row.innerHTML = '';
+  sbsArr.forEach((v, i) => {
+    const c = document.createElement('div');
+    c.className = 'sbs-cell' + (done.includes(i) ? ' done' : cmp.includes(i) ? ' cmp' : '');
+    // if swap happening, mark red
+    c.textContent = v;
+    row.appendChild(c);
+  });
+}
+
+function sbsNext() {
+  if (!sbsRunning) return;
+  const n = sbsArr.length;
+  const doneFrom = n - sbsI;
+
+  if (sbsJ >= n - sbsI - 1) {
+    // end of pass
+    sbsI++;
+    sbsJ = 0;
+    if (sbsI >= n - 1) {
+      renderSBS([], [...Array(n).keys()]);
+      document.getElementById('sbsExplain').innerHTML = '<span>✓ Готово! Массив отсортирован за ' + sbsCmp + ' сравнений.</span>';
+      document.getElementById('sbsNext').disabled = true;
+      sbsRunning = false;
+      document.getElementById('sbsCounter').textContent = 'сравнений: ' + sbsCmp;
+      return;
+    }
+    renderSBS([], [...Array(n).keys()].filter(i => i >= n - sbsI));
+    document.getElementById('sbsExplain').innerHTML = 'Проход ' + sbsI + ' завершён. Элемент <span>' + sbsArr[n-sbsI] + '</span> встал на место.';
+    return;
+  }
+
+  const a = sbsArr[sbsJ], b = sbsArr[sbsJ + 1];
+  sbsCmp++;
+  document.getElementById('sbsCounter').textContent = 'сравнений: ' + sbsCmp;
+
+  const doneIdx = [...Array(n).keys()].filter(i => i >= n - sbsI);
+
+  if (a > b) {
+    sbsArr[sbsJ] = b; sbsArr[sbsJ+1] = a;
+    renderSBS([sbsJ, sbsJ+1], doneIdx);
+    document.getElementById('sbsExplain').innerHTML =
+      sbsJ + ': <span>' + a + ' > ' + b + '</span> → меняем местами → [' + sbsArr.join(', ') + ']';
+  } else {
+    renderSBS([sbsJ, sbsJ+1], doneIdx);
+    document.getElementById('sbsExplain').innerHTML =
+      sbsJ + ': <span>' + a + ' ≤ ' + b + '</span> → оставляем как есть';
+  }
+  sbsJ++;
+}
+
+let sbsAutoOn = false;
+function sbsAuto() {
+  if (!sbsRunning) sbsStart();
+  sbsAutoOn = !sbsAutoOn;
+  document.getElementById('sbsAuto').textContent = sbsAutoOn ? '⏸ Пауза' : '▶ Авто';
+  if (sbsAutoOn) autoStep();
+}
+function autoStep() {
+  if (!sbsAutoOn || !sbsRunning) { sbsAutoOn = false; document.getElementById('sbsAuto').textContent = '▶ Авто'; return; }
+  sbsNext();
+  sbsAutoTimer = setTimeout(autoStep, 400);
+}
+
+sbsStart();
+
+// ── RACE SORT ──
+let bData = [], sData = [];
+const COLS = ['#2a4a3a','#2a4a4a','#2a3a4a','#3a3060','#4a2a60','#4a2a40','#4a3a2a','#3a4a2a'];
+
+function shuffle(a) {
+  for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function initRace() {
+  bData = shuffle([...Array(8)].map((_,i)=>(i+1)*12));
+  sData = [...bData];
+  renderBars('bubble', bData); renderBars('selection', sData);
+  document.getElementById('bubbleOps').textContent = '—';
+  document.getElementById('selectionOps').textContent = '—';
+}
+function shuffleRace(t) {
+  if (t==='bubble') { bData=shuffle([...Array(8)].map((_,i)=>(i+1)*12)); renderBars('bubble',bData); document.getElementById('bubbleOps').textContent='—'; }
+  else { sData=shuffle([...Array(8)].map((_,i)=>(i+1)*12)); renderBars('selection',sData); document.getElementById('selectionOps').textContent='—'; }
+}
+function renderBars(id, arr, cmp=[], done=[]) {
+  const c = document.getElementById(id+'Bars');
+  const mx = Math.max(...arr);
+  c.innerHTML = '';
+  arr.forEach((v,i) => {
+    const b = document.createElement('div');
+    b.className = 'bar' + (done.includes(i)?' done-bar':'') + (cmp.includes(i)?' cmp-bar':'');
+    b.style.height = (v/mx*100)+'%';
+    if (!done.includes(i) && !cmp.includes(i)) b.style.background = COLS[i%COLS.length];
+    const lbl = document.createElement('div'); lbl.className='bar-lbl'; lbl.textContent=v; b.appendChild(lbl);
+    c.appendChild(b);
+  });
+}
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+async function runSort(type) {
+  if (type==='bubble') {
+    const arr=[...bData]; let ops=0; const done=[];
+    for (let i=0;i<arr.length-1;i++) {
+      for (let j=0;j<arr.length-i-1;j++) {
+        ops++; renderBars('bubble',arr,[j,j+1],done); await sleep(110);
+        if (arr[j]>arr[j+1]) [arr[j],arr[j+1]]=[arr[j+1],arr[j]];
+      }
+      done.unshift(arr.length-1-i);
+    }
+    renderBars('bubble',arr,[],[...Array(arr.length).keys()]);
+    document.getElementById('bubbleOps').textContent = ops;
+  } else {
+    const arr=[...sData]; let ops=0; const done=[];
+    for (let i=0;i<arr.length-1;i++) {
+      let mi=i;
+      for (let j=i+1;j<arr.length;j++) { ops++; renderBars('selection',arr,[mi,j],done); await sleep(110); if(arr[j]<arr[mi]) mi=j; }
+      [arr[i],arr[mi]]=[arr[mi],arr[i]]; done.push(i);
+    }
+    renderBars('selection',arr,[],[...Array(arr.length).keys()]);
+    document.getElementById('selectionOps').textContent = ops;
+  }
+}
+initRace();
+
+// ── BINARY SEARCH ──
+const bsArr = Array.from({length:20}, (_,i) => Math.round((i+1)*4.8));
+function renderBSRow() {
+  const r = document.getElementById('bsRow'); r.innerHTML='';
+  bsArr.forEach((v,i) => { const d=document.createElement('div'); d.className='bs-cell'; d.textContent=v; d.id='bsc'+i; r.appendChild(d); });
+}
+renderBSRow();
+function resetBS() { renderBSRow(); document.getElementById('bsLog').textContent='// жду ввода...'; }
+async function runBS() {
+  renderBSRow();
+  const tgt = parseInt(document.getElementById('bsTarget').value);
+  const log = document.getElementById('bsLog'); log.innerHTML='';
+  if (isNaN(tgt)||tgt<1||tgt>100) { log.textContent='// введите число от 1 до 100'; return; }
+  let lo=0, hi=bsArr.length-1, step=0;
+  while (lo<=hi) {
+    step++;
+    const mid = Math.floor((lo+hi)/2);
+    document.querySelectorAll('.bs-cell').forEach((c,i)=>{
+      c.className='bs-cell'+(i<lo||i>hi?' out':(i===mid?' mid':' rng'));
+    });
+    await sleep(700);
+    const mv = bsArr[mid];
+    if (mv===tgt) {
+      document.getElementById('bsc'+mid).className='bs-cell hit';
+      log.innerHTML += `<span class="hit-line">✓ шаг ${step}: нашли ${mv} на позиции ${mid}. Итого: ${step} из макс. ${Math.ceil(Math.log2(bsArr.length))}</span>\n`;
+      return;
+    }
+    if (mv<tgt) { log.innerHTML+=`<span class="step-line">шаг ${step}: bsArr[${mid}]=${mv} &lt; ${tgt} → ищем правее\n</span>`; lo=mid+1; }
+    else { log.innerHTML+=`<span class="step-line">шаг ${step}: bsArr[${mid}]=${mv} &gt; ${tgt} → ищем левее\n</span>`; hi=mid-1; }
+    log.scrollTop=log.scrollHeight; await sleep(300);
+  }
+  log.innerHTML += `<span style="color:var(--mut)">// ${tgt} отсутствует в массиве</span>`;
+}
+
+// ── DETECTIVE ──
+const detFb = {
+  d1: {
+    ok:'✓ Правильно. При O(n²) удвоение данных = 4-кратный рост времени. 500→1000 (×2) = ×4 медленнее. 500→1500 (×3) = ×9 медленнее. Точное совпадение с наблюдениями.',
+    ng:'✗ Нет. Хостинг дал бы равномерное замедление, не зависящее от количества товаров. Ключевая улика: замедление пропорционально квадрату числа товаров — это O(n²).'
+  },
+  d2: {
+    ok:'✓ Правильно. Бинарный поиск требует строгого порядка. Новый ресторан добавили в конец, не пересортировав — алгоритм его «не видит», потому что предполагает что всё упорядочено.',
+    ng:'✗ Нет. Улика — остальные находятся мгновенно. Это значит алгоритм работает, но его предположение о порядке нарушено именно для нового элемента.'
+  },
+  d3: {
+    ok:'✓ Правильно. Это классическая ошибка «жадного» алгоритма — он берёт первый найденный путь не проверяя другие. Иногда первый путь оказывается оптимальным (отсюда случайная правильность).',
+    ng:'✗ Нет. GPS или скорость не объясняют почему при перезапуске иногда находится правильный путь. Улика — случайность результата: алгоритм не гарантирует оптимум.'
+  }
+};
+
+function detAns(btn, id, correct) {
+  const opts = btn.parentElement.querySelectorAll('.det-opt');
+  if ([...opts].some(o=>o.disabled)) return;
+  opts.forEach(o=>o.disabled=true);
+  btn.classList.add(correct?'ok':'ng');
+  if (!correct) opts.forEach(o=>{ if(o.getAttribute('onclick')?.includes(',true,')) o.classList.add('ok'); });
+  const fb = document.getElementById('f'+id);
+  fb.className = 'det-fb '+(correct?'ok':'ng');
+  fb.textContent = correct ? detFb[id].ok : detFb[id].ng;
+}
+
+// ── LEVELS ──
+function setLvl(l) {
+  document.querySelectorAll('.lt').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.lt.'+l).classList.add('active');
+  document.querySelectorAll('.tg').forEach(g=>g.classList.remove('show'));
+  document.getElementById('grp-'+l).classList.add('show');
+}
+
+// ── TASK ANSWERS ──
+const tmap = {
+  e1:{ok:'✓ Правильно. Сортировка — это не красота, это структура. Отсортированные данные позволяют использовать бинарный поиск, индексы, диапазонные запросы. Без порядка — только медленный перебор.',ng:'✗ Нет. Сортировка нужна не для вида — она открывает доступ к алгоритмам, которые работают только на упорядоченных данных.'},
+  e2:{ok:'✓ Правильно. После одного прохода максимальный элемент «всплывает» в конец. Именно отсюда название — пузырёк поднимается.',ng:'✗ Нет. После одного прохода пузырьковой сортировки самый большой элемент оказывается в конце — он «всплыл».'},
+  e4:{ok:'✓ Правильно. O(n²) означает квадратичный рост. 2× данных → 4× времени. 10× данных → 100× времени.',ng:'✗ Нет. O(n²) означает что время растёт как квадрат от размера данных. Удвоили данные — время выросло в 4 раза.'},
+  m4:{ok:'✓ Правильно. Бинарный поиск строит логику на предположении «всё слева меньше, всё справа больше». Один неупорядоченный элемент ломает это предположение — алгоритм может пропустить нужное.',ng:'✗ Нет. Проблема в логике самого алгоритма. Бинарный поиск предполагает строгий порядок — без него он даёт неверные результаты.'},
+  h3:{ok:'✓ Правильно. Шазам создаёт «звуковой отпечаток» — хэш из характеристик записи. Затем ищет этот хэш в таблице. Хэш-поиск = O(1). Вот почему 3 секунды независимо от размера базы.',ng:'✗ Нет. Параллельный перебор был бы O(n/серверов) — всё равно линейный. Реальный ответ: хэш-таблица звуковых отпечатков, поиск O(1).'},
+};
+
+function ta(btn, gid, correct) {
+  const opts = btn.parentElement.querySelectorAll('.topt');
+  if ([...opts].some(o=>o.disabled)) return;
+  opts.forEach(o=>o.disabled=true);
+  btn.classList.add(correct?'ok':'ng');
+  if (!correct) opts.forEach(o=>{ if(o.getAttribute('onclick')?.includes(',true,')) o.classList.add('ok'); });
+  const fb = document.getElementById('fb-'+gid);
+  const m = tmap[gid];
+  fb.className = 'tfb '+(correct?'ok':'ng');
+  fb.textContent = m?(correct?m.ok:m.ng):(correct?'✓ Правильно!':'✗ Не совсем — верный ответ выделен.');
+}
+
+function chkN(id, ans, tol, expl) {
+  const v = parseFloat(document.getElementById('inp-'+id).value);
+  const ok = !isNaN(v) && Math.abs(v-ans)<=tol;
+  const fb = document.getElementById('fb-'+id);
+  fb.className = 'tfb '+(ok?'ok':'ng');
+  fb.textContent = (ok?'':'✗ Нет. ')+expl;
+}
+
+function chkM2() {
+  const v = document.getElementById('inp-m2').value.toLowerCase().replace(/\s/g,'');
+  const ok = v.includes('1000000000')||v.includes('миллиард')||v.includes('1400000')||v.includes('в714');
+  const fb = document.getElementById('fb-m2');
+  fb.className = 'tfb '+(ok?'ok':'ng');
+  fb.textContent = ok
+    ? '✓ Правильно! Линейный: 10 000 × 100 000 = 1 000 000 000 (миллиард). Бинарный: 14 × 100 000 = 1 400 000. Разница в 714 раз — одно изменение алгоритма, огромный результат.'
+    : '✗ Посчитайте: линейный = 10 000 × 100 000 = 1 000 000 000. Бинарный = 14 × 100 000 = 1 400 000. Разница — 714 раз.';
+}
+
+function chkM3() {
+  const v = document.getElementById('inp-m3').value.toLowerCase();
+  const keys = ['не отсортирован', 'маленьк', 'добавл', 'меняет', 'однократ', 'неупорядоч', 'один раз'];
+  const ok = keys.filter(k=>v.includes(k)).length >= 2;
+  const fb = document.getElementById('fb-m3');
+  fb.className = 'tfb '+(ok?'ok':'ng');
+  fb.textContent = ok
+    ? '✓ Правильно! Линейный лучше когда: (1) список не отсортирован и сортировать дороже чем один раз найти; (2) список маленький — накладные расходы бинарного не оправданы; (3) данные постоянно меняются — поддерживать сортировку дорого.'
+    : '✗ Подсказка: бинарному нужен отсортированный список. Когда сортировка дороже самого поиска, или данных мало, или они часто обновляются — линейный выгоднее.';
+}
+
+function chkH1() {
+  const v = document.getElementById('inp-h1').value.replace(/\s/g,'');
+  const ok = v.includes('250000000000') || v.includes('250млрд') || (v.includes('2.5')&&v.includes('11'));
+  const fb = document.getElementById('fb-h1');
+  fb.className = 'tfb '+(ok?'ok':'ng');
+  fb.textContent = ok
+    ? '✓ Верно! 500 × 50 × 10 × 500 000 000 = 250 млрд вычислений в день. Один сервер = ~10 млрд оп/сек = 25 секунд только на одну задачу. Именно поэтому Instagram использует ~50 000+ серверов.'
+    : '✗ Посчитайте: 500 × 50 × 10 × 500 000 000 = 250 000 000 000 (250 миллиардов). Объясните почему это требует тысячи серверов.';
+}
+
+function chkH2() {
+  const v = document.getElementById('inp-h2').value.toLowerCase();
+  const keys = ['макс','если','больше','цикл','42','начало'];
+  const ok = keys.filter(k=>v.includes(k)).length >= 4;
+  const fb = document.getElementById('fb-h2');
+  fb.className = 'tfb '+(ok?'ok':'ng');
+  fb.textContent = ok
+    ? '✓ Отлично! НАЧАЛО → макс=3 → ДЛЯ каждого x в [3,17,5,42,8,1]: ЕСЛИ x>макс → макс=x → КОНЕЦ → вывести макс (=42). Это O(n) — один проход.'
+    : '✗ Попробуйте: НАЧАЛО → макс = первый элемент → ДЛЯ каждого x: ЕСЛИ x > макс: макс = x → КОНЕЦ → вывести макс. Ответ будет 42.';
+}
+
+function chkH4() {
+  const v = document.getElementById('inp-h4').value.toLowerCase();
+  const okKeys = ['верно','да','прав','работает'];
+  const ngKeys = ['понима','принцип','выбор','когда','зачем','ограничен','не всегда','задач'];
+  const ok = okKeys.some(k=>v.includes(k)) && ngKeys.some(k=>v.includes(k));
+  const fb = document.getElementById('fb-h4');
+  fb.className = 'tfb '+(ok?'ok':'ng');
+  fb.textContent = ok
+    ? '✓ Хороший ответ! Верно: sort() в Python реализован как Timsort — один из лучших алгоритмов, O(n log n). Для большинства задач — отличный выбор. Упущено: понимание принципов нужно чтобы (1) выбирать подходящую структуру данных; (2) знать когда sort() не подходит; (3) писать кастомные алгоритмы для специальных задач; (4) понимать ограничения и объяснять поведение системы.'
+    : '✗ Попробуйте структурировать: что в утверждении коллеги верно (sort() действительно хорош), и что он упускает (понимание принципов нужно для нестандартных задач, отладки, выбора структур данных).';
+}
+</script>
+</body>
+</html>

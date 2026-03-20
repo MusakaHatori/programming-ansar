@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ИБ — Урок 01: Этичный хакинг</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #010a01;
+  --green: #00ff41;
+  --green-dim: #00aa2a;
+  --green-dark: #003a0e;
+  --green-glow: rgba(0,255,65,0.15);
+  --red: #ff2244;
+  --yellow: #ffcc00;
+  --cyan: #00ffcc;
+  --text: #ccffcc;
+  --muted: #336633;
+  --surface: #010e01;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--green);
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CRT EFFECT */
+body::before {
+  content:'';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9990;
+}
+
+body::after {
+  content:'';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+  z-index: 9989;
+}
+
+/* CURSOR */
+.cursor {
+  position: fixed;
+  width: 4px; height: 18px;
+  background: var(--green);
+  pointer-events: none;
+  z-index: 9999;
+  animation: cursorBlink 1s step-end infinite;
+}
+@keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(1,10,1,0.95);
+  border-bottom: 1px solid var(--green-dark);
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-logo {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--green);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 10px var(--green);
+}
+
+.nav-status {
+  font-size: 0.65rem;
+  color: var(--green-dim);
+  letter-spacing: 0.15em;
+}
+
+.nav-status .blink {
+  animation: blink 1s step-end infinite;
+  color: var(--green);
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.nav-links {
+  margin-left: auto;
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.15em;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.nav-links a:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6rem 2rem 3rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-prefix {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.3em;
+  margin-bottom: 1.5rem;
+}
+
+.hero-prefix span { color: var(--green); }
+
+.hero h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 30px rgba(0,255,65,0.5), 0 0 60px rgba(0,255,65,0.2);
+  margin-bottom: 0.5rem;
+}
+
+.hero h1 .dim { color: var(--green-dim); }
+
+.hero-sub {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.8;
+  max-width: 600px;
+  margin: 2rem 0 3rem;
+  opacity: 0.7;
+}
+
+/* BOOT SEQUENCE */
+.boot-seq {
+  font-size: 0.75rem;
+  color: var(--green-dim);
+  line-height: 2;
+  margin-bottom: 2rem;
+}
+.boot-seq .ok { color: var(--green); }
+.boot-seq .warn { color: var(--yellow); }
+.boot-seq .err { color: var(--red); }
+
+/* SECTIONS */
+.section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 5rem 2rem;
+}
+
+.sec-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.3em;
+  margin-bottom: 1rem;
+}
+
+.sec-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 15px rgba(0,255,65,0.3);
+}
+
+.sec-desc {
+  font-size: 0.85rem;
+  color: var(--text);
+  opacity: 0.6;
+  line-height: 1.8;
+  max-width: 680px;
+  margin-bottom: 3rem;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--green-dark);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* THEORY CARDS */
+.theory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+  gap: 1px;
+  background: var(--green-dark);
+  border: 1px solid var(--green-dark);
+}
+
+.theory-card {
+  background: var(--surface);
+  padding: 2rem;
+  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.theory-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--green-glow);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.theory-card:hover { background: #010f01; }
+.theory-card:hover::after { opacity: 1; }
+
+.tc-num {
+  font-family: 'VT323', monospace;
+  font-size: 3rem;
+  color: var(--green-dark);
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.tc-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.tc-desc {
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.6;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════
+   LABS — INTERACTIVE HACKING SIMULATIONS
+   ═══════════════════════════════════════ */
+
+.labs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+/* LAB WRAPPER */
+.lab {
+  border: 1px solid var(--green-dark);
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.lab::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+}
+
+.lab-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--green-dark);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lab-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+}
+
+.lab-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(0,255,65,0.4);
+}
+
+.lab-diff {
+  margin-left: auto;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid;
+}
+
+.diff-easy { border-color: var(--green); color: var(--green); }
+.diff-med { border-color: var(--yellow); color: var(--yellow); }
+.diff-hard { border-color: var(--red); color: var(--red); }
+
+.lab-body {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media(max-width:700px) { .lab-body { grid-template-columns: 1fr; } }
+
+.lab-theory {
+  border-right: 1px solid var(--green-dark);
+  padding-right: 1.5rem;
+}
+
+@media(max-width:700px) {
+  .lab-theory { border-right: none; border-bottom: 1px solid var(--green-dark); padding-right: 0; padding-bottom: 1.5rem; }
+}
+
+.lab-theory h4 {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+
+.lab-theory p, .lab-theory li {
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.7;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+}
+
+.lab-theory ul { list-style: none; }
+.lab-theory li::before { content: '> '; color: var(--green-dim); }
+
+.lab-practice h4 {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+
+/* TERMINAL */
+.terminal {
+  background: #000;
+  border: 1px solid var(--green-dark);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  min-height: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 1rem;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-dark) transparent;
+}
+
+.terminal-topbar {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: #000;
+  border-bottom: 1px solid var(--green-dark);
+  margin: -1rem -1rem 0.75rem;
+}
+
+.tbar-dot { width:8px; height:8px; border-radius:50%; }
+.tbar-r { background: #ff5f57; }
+.tbar-y { background: #febc2e; }
+.tbar-g { background: #28c840; }
+
+.t-line { line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+.t-prompt { color: var(--green); }
+.t-cmd { color: #ffffff; }
+.t-out { color: var(--text); opacity: 0.7; }
+.t-success { color: var(--green); }
+.t-error { color: var(--red); }
+.t-warn { color: var(--yellow); }
+.t-info { color: var(--cyan); }
+.t-cursor-inline { display:inline-block; width:7px; height:13px; background:var(--green); animation:blink 1s step-end infinite; vertical-align:middle; }
+
+/* INPUT ROW */
+.input-row {
+  display: flex;
+  gap: 0;
+  margin-top: 0.75rem;
+  border: 1px solid var(--green-dark);
+  background: #000;
+}
+
+.input-prompt {
+  padding: 0.6rem 0.75rem;
+  color: var(--green);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  border-right: 1px solid var(--green-dark);
+}
+
+.input-field {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #fff;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.6rem 0.75rem;
+  outline: none;
+  caret-color: var(--green);
+}
+
+.btn-run {
+  padding: 0.6rem 1.2rem;
+  background: var(--green-dark);
+  border: none;
+  border-left: 1px solid var(--green-dark);
+  color: var(--green);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s, text-shadow 0.2s;
+}
+.btn-run:hover {
+  background: #003a0e;
+  text-shadow: 0 0 8px var(--green);
+}
+
+.hint-row {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.hint-row span { color: var(--green-dim); }
+
+/* ─── LAB 1: SQL INJECTION ─── */
+#lab1-loginbox {
+  background: #000;
+  border: 1px solid var(--green-dark);
+  padding: 1.5rem;
+  margin-top: 0;
+}
+
+#lab1-loginbox h5 {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.login-field {
+  width: 100%;
+  background: #010a01;
+  border: 1px solid var(--green-dark);
+  color: var(--green);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  padding: 0.6rem 0.75rem;
+  outline: none;
+  margin-bottom: 0.75rem;
+  caret-color: var(--green);
+}
+.login-field:focus { border-color: var(--green); }
+.login-field::placeholder { color: var(--muted); }
+
+.btn-login {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--green-dark);
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-login:hover { background: #003a0e; text-shadow: 0 0 8px var(--green); }
+
+#lab1-result {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  font-size: 0.78rem;
+  display: none;
+  line-height: 1.6;
+}
+
+.result-success {
+  background: rgba(0,255,65,0.05);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+.result-fail {
+  background: rgba(255,34,68,0.05);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+/* ─── LAB 2: PORT SCANNER ─── */
+.scan-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  margin-top: 0.5rem;
+}
+
+.port-cell {
+  aspect-ratio: 1;
+  background: var(--green-dark);
+  font-size: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  cursor: default;
+  position: relative;
+}
+
+.port-cell.scanning { background: var(--yellow); color: #000; animation: scanPulse 0.5s ease infinite; }
+.port-cell.open { background: var(--green); color: #000; font-weight: bold; }
+.port-cell.closed { background: #111; color: var(--muted); }
+.port-cell.filtered { background: #220000; color: var(--red); }
+
+@keyframes scanPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.port-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  font-size: 0.65rem;
+}
+
+.port-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+}
+
+/* ─── LAB 3: PASSWORD CRACKER ─── */
+.hash-display {
+  background: #000;
+  border: 1px solid var(--green-dark);
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--cyan);
+  word-break: break-all;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.hash-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.15em;
+}
+
+.wordlist {
+  background: #000;
+  border: 1px solid var(--green-dark);
+  padding: 0.75rem;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-dark) transparent;
+}
+
+.wordlist-item {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.8;
+  transition: color 0.1s;
+}
+.wordlist-item.trying { color: var(--yellow); }
+.wordlist-item.found { color: var(--green); font-weight: bold; }
+
+.crack-progress {
+  height: 4px;
+  background: var(--green-dark);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.crack-fill {
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 6px var(--green);
+}
+
+/* ─── LAB 4: XSS ─── */
+.browser-mock {
+  background: #111;
+  border: 1px solid var(--green-dark);
+  border-radius: 0;
+}
+
+.browser-bar {
+  background: #0a0a0a;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--green-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.browser-dots { display:flex; gap:0.3rem; }
+.browser-dot { width:8px; height:8px; border-radius:50%; }
+
+.browser-url {
+  flex: 1;
+  background: #050505;
+  border: 1px solid var(--green-dark);
+  color: var(--muted);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.browser-content {
+  min-height: 150px;
+  padding: 1rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.xss-comment-box {
+  background: #050505;
+  border: 1px solid #1a1a1a;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.xss-comment-user { color: var(--cyan); font-size: 0.7rem; margin-bottom: 0.3rem; }
+.xss-comment-text { color: var(--text); font-size: 0.78rem; opacity: 0.8; }
+
+#xss-alert-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 5000;
+  align-items: center;
+  justify-content: center;
+}
+
+#xss-alert-overlay.show { display: flex; }
+
+.xss-alert-box {
+  background: #0a0a0a;
+  border: 2px solid var(--red);
+  padding: 2rem 3rem;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(255,34,68,0.3);
+  max-width: 400px;
+}
+
+.xss-alert-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.85rem;
+  color: var(--red);
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.xss-alert-msg {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.xss-alert-close {
+  padding: 0.6rem 2rem;
+  background: none;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+/* ─── LAB 5: NETWORK SNIFFER ─── */
+.packet-stream {
+  background: #000;
+  border: 1px solid var(--green-dark);
+  height: 250px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  font-size: 0.68rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-dark) transparent;
+}
+
+.packet {
+  display: grid;
+  grid-template-columns: 70px 100px 100px 60px 1fr;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid #050f05;
+  transition: background 0.1s;
+  line-height: 1.6;
+}
+.packet:hover { background: #010f01; }
+
+.packet.http { color: var(--cyan); }
+.packet.https { color: var(--green); }
+.packet.dns { color: var(--yellow); }
+.packet.tcp { color: var(--text); opacity:0.7; }
+.packet.suspicious { color: var(--red); background: rgba(255,34,68,0.05); }
+.packet.suspicious:hover { background: rgba(255,34,68,0.1); }
+
+.packet-header {
+  display: grid;
+  grid-template-columns: 70px 100px 100px 60px 1fr;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--green-dark);
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* EXPLAINED PANEL */
+.explain-panel {
+  background: rgba(0,255,65,0.03);
+  border: 1px solid var(--green-dark);
+  border-left: 3px solid var(--green);
+  padding: 1rem 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.8;
+  line-height: 1.7;
+  display: none;
+}
+.explain-panel.show { display: block; }
+.explain-panel strong { color: var(--green); }
+
+/* SCORE BOARD */
+.scoreboard {
+  background: var(--surface);
+  border: 1px solid var(--green-dark);
+  padding: 2rem;
+  margin-top: 3rem;
+  text-align: center;
+  position: relative;
+}
+
+.score-display {
+  font-family: 'VT323', monospace;
+  font-size: 5rem;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.3em;
+  margin-bottom: 1rem;
+}
+
+.score-bars {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.score-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-bar-wrap {
+  width: 100%;
+  height: 60px;
+  background: var(--green-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.score-bar-fill {
+  background: var(--green);
+  width: 100%;
+  height: 0%;
+  transition: height 1s ease;
+  box-shadow: 0 0 6px var(--green);
+}
+
+.score-bar-name {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+/* REALITY CHECK */
+.reality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--green-dark);
+  border: 1px solid var(--green-dark);
+  margin-top: 3rem;
+}
+
+@media(max-width:600px) { .reality-grid { grid-template-columns: 1fr; } }
+
+.reality-card {
+  background: var(--surface);
+  padding: 2rem;
+}
+
+.rc-type {
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  margin-bottom: 0.75rem;
+}
+
+.rc-redteam { color: var(--red); }
+.rc-blueteam { color: var(--cyan); }
+
+.rc-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.rc-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rc-list li {
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.7;
+  line-height: 1.5;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.rc-list li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  font-size: 0.65rem;
+  top: 0.15rem;
+}
+
+.rc-redteam-li::before { color: var(--red); }
+.rc-blueteam-li::before { color: var(--cyan); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--green-dark);
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* GLITCH */
+@keyframes glitch {
+  0%,100% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -1px); }
+}
+
+.glitch:hover { animation: glitch 0.3s ease; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<nav>
+  <div class="nav-logo">SEC//LAB</div>
+  <div class="nav-status"><span class="blink">■</span> СИСТЕМА АКТИВНА · УЧЕБНЫЙ РЕЖИМ</div>
+  <ul class="nav-links">
+    <li><a href="#theory">Теория</a></li>
+    <li><a href="#labs">Лабы</a></li>
+    <li><a href="#reality">Реальность</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-prefix">// УРОК 01 · <span>ИНФОРМАЦИОННАЯ БЕЗОПАСНОСТЬ</span></div>
+  <h1 class="glitch">ЭТИЧНЫЙ<br><span class="dim">ХАКИНГ</span></h1>
+
+  <div class="boot-seq">
+    <div class="t-line"><span class="ok">[  OK  ]</span> Загрузка учебного окружения...</div>
+    <div class="t-line"><span class="ok">[  OK  ]</span> Инициализация виртуальных целей...</div>
+    <div class="t-line"><span class="warn">[ WARN ]</span> Все атаки выполняются в изолированной среде</div>
+    <div class="t-line"><span class="ok">[  OK  ]</span> Правовой статус: ЛЕГАЛЬНО (учебная среда)</div>
+    <div class="t-line"><span class="ok">[  OK  ]</span> Готов к работе. <span class="t-cursor-inline"></span></div>
+  </div>
+
+  <p class="hero-sub">
+    Интерактивный урок по основам информационной безопасности. Ты проведёшь реальные атаки на демо-системы, поймёшь как они работают изнутри — и почему защита важнее взлома.
+  </p>
+</div>
+
+<!-- THEORY -->
+<hr class="divider">
+<div class="section" id="theory">
+  <div class="reveal">
+    <div class="sec-label">// 01 — ОСНОВЫ</div>
+    <h2 class="sec-title">Как мыслит хакер</h2>
+    <p class="sec-desc">Прежде чем атаковать — нужно понять фундамент. Этичный хакер думает как атакующий, но работает на стороне защиты.</p>
+  </div>
+
+  <div class="theory-grid reveal">
+    <div class="theory-card">
+      <div class="tc-num">01</div>
+      <div class="tc-title">РАЗВЕДКА (RECON)</div>
+      <div class="tc-desc">Сбор информации о цели без прямого контакта. OSINT, сканирование DNS, анализ открытых данных. Чем больше знаешь — тем точнее атака.</div>
+    </div>
+    <div class="theory-card">
+      <div class="tc-num">02</div>
+      <div class="tc-title">СКАНИРОВАНИЕ</div>
+      <div class="tc-desc">Поиск открытых портов, запущенных сервисов, версий ПО. Каждый открытый порт — потенциальная точка входа. Nmap — главный инструмент.</div>
+    </div>
+    <div class="theory-card">
+      <div class="tc-num">03</div>
+      <div class="tc-title">ЭКСПЛУАТАЦИЯ</div>
+      <div class="tc-desc">Использование найденных уязвимостей для получения доступа. SQL-инъекции, XSS, переполнение буфера, социальная инженерия.</div>
+    </div>
+    <div class="theory-card">
+      <div class="tc-num">04</div>
+      <div class="tc-title">ПОСТ-ЭКСПЛУАТАЦИЯ</div>
+      <div class="tc-desc">После входа — повышение привилегий, закрепление, сбор данных. В реальном пентесте: документирование и немедленный доклад заказчику.</div>
+    </div>
+    <div class="theory-card">
+      <div class="tc-num">05</div>
+      <div class="tc-title">ОТЧЁТНОСТЬ</div>
+      <div class="tc-desc">То чего не показывают в кино. 40% работы пентестера — написание детальных отчётов. Нашёл уязвимость — объясни как её закрыть.</div>
+    </div>
+    <div class="theory-card">
+      <div class="tc-num">06</div>
+      <div class="tc-title">CIA ТРИАДА</div>
+      <div class="tc-desc">Confidentiality (конфиденциальность), Integrity (целостность), Availability (доступность). Три столпа ИБ. Любая атака нарушает один или несколько.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LABS -->
+<hr class="divider">
+<div class="section" id="labs">
+  <div class="reveal">
+    <div class="sec-label">// 02 — ПРАКТИКА</div>
+    <h2 class="sec-title">Лабораторные работы</h2>
+    <p class="sec-desc">5 реальных типов атак. Всё запускается прямо здесь. Никаких реальных систем — только учебная среда.</p>
+  </div>
+
+  <div class="labs-container reveal">
+
+    <!-- ═══ LAB 1: SQL INJECTION ═══ -->
+    <div class="lab">
+      <div class="lab-header">
+        <div class="lab-num">LAB-01</div>
+        <div class="lab-title">SQL INJECTION</div>
+        <div class="lab-diff diff-easy">НАЧАЛЬНЫЙ</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-theory">
+          <h4>// ЧТО ПРОИСХОДИТ</h4>
+          <p>SQL-инъекция — одна из старейших и до сих пор самых частых уязвимостей. Приложение вставляет пользовательский ввод прямо в SQL-запрос без проверки.</p>
+          <br>
+          <p>Когда ты вводишь логин, код выглядит так:</p>
+          <br>
+          <div style="background:#000;padding:0.75rem;font-size:0.72rem;color:var(--cyan);border:1px solid var(--green-dark);line-height:1.8">
+            SELECT * FROM users<br>
+            WHERE login='<span style="color:var(--yellow)">ТВОЙ_ВВОД</span>'<br>
+            AND password='<span style="color:var(--yellow)">ПАРОЛЬ</span>'
+          </div>
+          <br>
+          <p>Если ввести специальные символы — можно изменить логику запроса.</p>
+          <br>
+          <h4>// ПОПРОБУЙ</h4>
+          <ul>
+            <li>Обычный логин: <span style="color:var(--yellow)">admin</span></li>
+            <li>Инъекция: <span style="color:var(--red)">admin'--</span></li>
+            <li>Или: <span style="color:var(--red)">' OR '1'='1</span></li>
+            <li>Или: <span style="color:var(--red)">'; DROP TABLE--</span></li>
+          </ul>
+        </div>
+        <div class="lab-practice">
+          <h4>// ДЕМО: ПАНЕЛЬ ВХОДА (УЯЗВИМАЯ)</h4>
+          <div id="lab1-loginbox">
+            <h5>⚠ VULNERABLE LOGIN PANEL v1.0</h5>
+            <input class="login-field" id="sql-login" placeholder="Логин" value="">
+            <input class="login-field" id="sql-pass" placeholder="Пароль" type="text" value="">
+            <button class="btn-login" onclick="doSQLAttack()">[ ВОЙТИ ]</button>
+            <div id="lab1-result"></div>
+          </div>
+          <div class="explain-panel" id="sql-explain"></div>
+          <div class="hint-row">Подсказка: попробуй логин <span>' OR '1'='1</span> с любым паролем</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 2: PORT SCANNER ═══ -->
+    <div class="lab">
+      <div class="lab-header">
+        <div class="lab-num">LAB-02</div>
+        <div class="lab-title">СКАНИРОВАНИЕ ПОРТОВ</div>
+        <div class="lab-diff diff-easy">НАЧАЛЬНЫЙ</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-theory">
+          <h4>// ЧТО ТАКОЕ ПОРТЫ</h4>
+          <p>Порты — это "двери" компьютера. Каждый сервис слушает на своём порту. Зная какие двери открыты — хакер знает что атаковать.</p>
+          <br>
+          <ul>
+            <li>Порт 22 — SSH (удалённый доступ)</li>
+            <li>Порт 80 — HTTP (сайт)</li>
+            <li>Порт 443 — HTTPS (сайт с SSL)</li>
+            <li>Порт 3306 — MySQL (база данных)</li>
+            <li>Порт 21 — FTP (файлы)</li>
+            <li>Порт 3389 — RDP (Windows удалённый рабочий стол)</li>
+          </ul>
+          <br>
+          <p>Открытый порт 3306 напрямую из интернета — это как открытая дверь в хранилище данных.</p>
+        </div>
+        <div class="lab-practice">
+          <h4>// ЗАПУСТИ СКАНИРОВАНИЕ</h4>
+          <div class="input-row">
+            <div class="input-prompt">nmap $</div>
+            <input class="input-field" id="scan-target" value="192.168.1.1" placeholder="IP-адрес цели">
+            <button class="btn-run" onclick="runPortScan()">SCAN</button>
+          </div>
+          <div class="scan-grid" id="scan-grid" style="margin-top:0.75rem"></div>
+          <div class="port-legend">
+            <span><div class="legend-dot" style="background:var(--green)"></div> OPEN</span>
+            <span><div class="legend-dot" style="background:#111"></div> CLOSED</span>
+            <span><div class="legend-dot" style="background:#220000"></div> FILTERED</span>
+            <span><div class="legend-dot" style="background:var(--yellow)"></div> SCANNING</span>
+          </div>
+          <div class="terminal" id="scan-terminal" style="margin-top:0.75rem;min-height:80px">
+            <div class="terminal-topbar"><div class="tbar-dot tbar-r"></div><div class="tbar-dot tbar-y"></div><div class="tbar-dot tbar-g"></div></div>
+            <div class="t-line t-muted" style="color:var(--muted)">Введи IP и нажми SCAN...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 3: PASSWORD CRACKER ═══ -->
+    <div class="lab">
+      <div class="lab-header">
+        <div class="lab-num">LAB-03</div>
+        <div class="lab-title">ВЗЛОМ ХЭШЕЙ ПАРОЛЕЙ</div>
+        <div class="lab-diff diff-med">СРЕДНИЙ</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-theory">
+          <h4>// КАК ХРАНЯТСЯ ПАРОЛИ</h4>
+          <p>Пароли никогда не хранятся в открытом виде (в хорошо написанных системах). Хранится хэш — результат необратимой функции.</p>
+          <br>
+          <div style="background:#000;padding:0.75rem;font-size:0.72rem;border:1px solid var(--green-dark);line-height:2">
+            <span style="color:var(--muted)">Пароль:</span> <span style="color:var(--yellow)">password123</span><br>
+            <span style="color:var(--muted)">MD5-хэш:</span> <span style="color:var(--cyan)">482c811da5d5b4bc6d497ffa98491e38</span>
+          </div>
+          <br>
+          <p>Атака по словарю: перебираем слова из списка, хэшируем каждое, сравниваем с целевым хэшем.</p>
+          <br>
+          <p style="color:var(--red);opacity:0.8">MD5 — устаревший и небезопасный алгоритм. Современные системы используют bcrypt, Argon2.</p>
+        </div>
+        <div class="lab-practice">
+          <h4>// ЦЕЛЬ: ВЗЛОМАТЬ ХЭШ</h4>
+          <div class="hash-display">
+            <div class="hash-label">MD5 HASH TARGET:</div>
+            <span id="crack-hash">5f4dcc3b5aa765d61d8327deb882cf99</span>
+          </div>
+          <div class="crack-progress"><div class="crack-fill" id="crack-fill"></div></div>
+          <div class="wordlist" id="wordlist"></div>
+          <button class="btn-run" style="width:100%;padding:0.7rem" onclick="startCrack()" id="crack-btn">▶ ЗАПУСТИТЬ АТАКУ ПО СЛОВАРЮ</button>
+          <div class="explain-panel" id="crack-explain"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 4: XSS ═══ -->
+    <div class="lab">
+      <div class="lab-header">
+        <div class="lab-num">LAB-04</div>
+        <div class="lab-title">МЕЖСАЙТОВЫЙ СКРИПТИНГ (XSS)</div>
+        <div class="lab-diff diff-med">СРЕДНИЙ</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-theory">
+          <h4>// ЧТО ТАКОЕ XSS</h4>
+          <p>XSS позволяет внедрить JavaScript-код на страницу так, что он выполняется в браузере другого пользователя.</p>
+          <br>
+          <p>Представь форму комментариев. Уязвимый сайт выводит ввод пользователя напрямую в HTML без экранирования.</p>
+          <br>
+          <p>Если написать в комментарий тег <span style="color:var(--red)">&lt;script&gt;</span> — он выполнится у всех кто откроет страницу.</p>
+          <br>
+          <h4>// ЧТО МОЖНО УКРАСТЬ</h4>
+          <ul>
+            <li>Куки сессии (угон аккаунта)</li>
+            <li>Данные из форм (пароли)</li>
+            <li>Токены авторизации</li>
+            <li>Перенаправить на фишинг</li>
+          </ul>
+        </div>
+        <div class="lab-practice">
+          <h4>// УЯЗВИМЫЙ ФОРУМ</h4>
+          <div class="browser-mock">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <div class="browser-dot" style="background:#ff5f57"></div>
+                <div class="browser-dot" style="background:#febc2e"></div>
+                <div class="browser-dot" style="background:#28c840"></div>
+              </div>
+              <div class="browser-url">http://vuln-forum.local/comments</div>
+            </div>
+            <div class="browser-content" id="xss-comments">
+              <div class="xss-comment-box">
+                <div class="xss-comment-user">user_alex:</div>
+                <div class="xss-comment-text">Хороший урок, многое понял</div>
+              </div>
+              <div class="xss-comment-box">
+                <div class="xss-comment-user">pro_hacker:</div>
+                <div class="xss-comment-text">SQL инъекции это классика</div>
+              </div>
+            </div>
+          </div>
+          <div class="input-row" style="margin-top:0.75rem">
+            <div class="input-prompt">comment $</div>
+            <input class="input-field" id="xss-input" placeholder="Напиши комментарий..." value="">
+            <button class="btn-run" onclick="postXSS()">POST</button>
+          </div>
+          <div class="hint-row">Попробуй: <span>&lt;img src=x onerror="alert('XSS!')"&gt;</span></div>
+          <div class="explain-panel" id="xss-explain"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 5: NETWORK SNIFFER ═══ -->
+    <div class="lab">
+      <div class="lab-header">
+        <div class="lab-num">LAB-05</div>
+        <div class="lab-title">АНАЛИЗ СЕТЕВОГО ТРАФИКА</div>
+        <div class="lab-diff diff-hard">ПРОДВИНУТЫЙ</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-theory">
+          <h4>// СНИФФИНГ ТРАФИКА</h4>
+          <p>Анализатор пакетов (снифер) перехватывает и анализирует данные которые проходят через сеть. Инструмент: Wireshark.</p>
+          <br>
+          <p>В незашифрованном HTTP-трафике можно увидеть пароли, куки, данные форм в открытом виде.</p>
+          <br>
+          <p>В публичных Wi-Fi сетях — любой в той же сети может слушать твой трафик если нет HTTPS.</p>
+          <br>
+          <h4>// НА ЧТО СМОТРЕТЬ</h4>
+          <ul>
+            <li>HTTP POST — данные форм (пароли)</li>
+            <li>DNS запросы — куда ходит устройство</li>
+            <li>Подозрительные IP — сканирование</li>
+            <li>ARP-запросы — возможная атака MITM</li>
+          </ul>
+        </div>
+        <div class="lab-practice">
+          <h4>// ЖИВОЙ ЗАХВАТ ПАКЕТОВ</h4>
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+            <button class="btn-run" onclick="startSniff()" id="sniff-btn" style="flex:1">▶ НАЧАТЬ ЗАХВАТ</button>
+            <button class="btn-run" onclick="stopSniff()" id="sniff-stop" style="flex:1;display:none">■ СТОП</button>
+          </div>
+          <div class="packet-header">
+            <span>ВРЕМЯ</span>
+            <span>ИСТОЧНИК</span>
+            <span>НАЗНАЧЕНИЕ</span>
+            <span>ПРОТОКОЛ</span>
+            <span>ДАННЫЕ</span>
+          </div>
+          <div class="packet-stream" id="packet-stream"></div>
+          <div class="explain-panel" id="sniff-explain"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /labs-container -->
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard reveal" id="scoreboard">
+    <div class="score-label">ПРОГРЕСС ОБУЧЕНИЯ</div>
+    <div class="score-display" id="score-display">000</div>
+    <div style="font-size:0.65rem;color:var(--muted);letter-spacing:0.2em;margin-top:0.3rem">ОЧКОВ ПОЛУЧЕНО</div>
+    <div class="score-bars" id="score-bars">
+      <div class="score-bar-item">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="bar-sql" style="height:0%"></div></div>
+        <div class="score-bar-name">SQL INJ</div>
+      </div>
+      <div class="score-bar-item">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="bar-scan" style="height:0%"></div></div>
+        <div class="score-bar-name">PORTSCAN</div>
+      </div>
+      <div class="score-bar-item">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="bar-crack" style="height:0%"></div></div>
+        <div class="score-bar-name">HASH</div>
+      </div>
+      <div class="score-bar-item">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="bar-xss" style="height:0%"></div></div>
+        <div class="score-bar-name">XSS</div>
+      </div>
+      <div class="score-bar-item">
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="bar-sniff" style="height:0%"></div></div>
+        <div class="score-bar-name">SNIFF</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REALITY -->
+<hr class="divider">
+<div class="section" id="reality">
+  <div class="reveal">
+    <div class="sec-label">// 03 — РЕАЛЬНОСТЬ</div>
+    <h2 class="sec-title">Работа в ИБ:<br>Red Team vs Blue Team</h2>
+    <p class="sec-desc">Две стороны одной медали. Большинство людей хочет в Red Team — и именно туда попасть сложнее всего.</p>
+  </div>
+
+  <div class="reality-grid reveal">
+    <div class="reality-card">
+      <div class="rc-type rc-redteam">▶ RED TEAM — АТАКУЮЩИЕ</div>
+      <div class="rc-title" style="color:var(--red)">Пентестеры</div>
+      <ul class="rc-list">
+        <li class="rc-redteam-li">Симулируют реальные атаки на заказчика</li>
+        <li class="rc-redteam-li">Ищут уязвимости до того как их найдут реальные хакеры</li>
+        <li class="rc-redteam-li">Самая романтичная часть ИБ — и самая редкая</li>
+        <li class="rc-redteam-li">Нужно знать: сети, ОС, криптографию, веб, мобильные</li>
+        <li class="rc-redteam-li">Зарплата: 250–600к+ (мидл-сеньор)</li>
+        <li class="rc-redteam-li" style="color:var(--yellow);opacity:1">Вакансий: 15–20% от всего рынка ИБ</li>
+      </ul>
+    </div>
+    <div class="reality-card">
+      <div class="rc-type rc-blueteam">▶ BLUE TEAM — ЗАЩИТНИКИ</div>
+      <div class="rc-title" style="color:var(--cyan)">SOC / Аналитики</div>
+      <ul class="rc-list">
+        <li class="rc-blueteam-li">Мониторинг систем, реагирование на инциденты</li>
+        <li class="rc-blueteam-li">Настройка SIEM, IDS/IPS, файрволов</li>
+        <li class="rc-blueteam-li">Разбор вредоносов, forensics</li>
+        <li class="rc-blueteam-li">Писать политики безопасности и обучать сотрудников</li>
+        <li class="rc-blueteam-li">Зарплата: 150–350к (мидл-сеньор)</li>
+        <li class="rc-blueteam-li" style="color:var(--green);opacity:1">Вакансий: 80% от всего рынка ИБ</li>
+      </ul>
+    </div>
+    <div class="reality-card">
+      <div class="rc-type" style="color:var(--yellow)">▶ ВХОД В ПРОФЕССИЮ</div>
+      <div class="rc-title" style="color:var(--yellow)">Путь с нуля</div>
+      <ul class="rc-list">
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Linux и сети — абсолютный фундамент</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">TryHackMe → HackTheBox (бесплатный старт)</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">CTF соревнования — лучшая практика</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Bug Bounty — реальные деньги без трудоустройства</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Писать — writeup'ы, статьи, CVE-репорты</li>
+        <li style="color:var(--yellow);opacity:1" class="rc-redteam-li">До первой работы: 18–36 месяцев честно</li>
+      </ul>
+    </div>
+    <div class="reality-card">
+      <div class="rc-type" style="color:var(--red)">▶ ОБ ЭТОМ МОЛЧАТ</div>
+      <div class="rc-title" style="color:var(--red)">Тёмная сторона</div>
+      <ul class="rc-list">
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">70% вакансий — compliance и документация</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Юридическая ответственность огромная</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Один неверный шаг без разрешения = уголовка</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Постоянное обучение — не опция, а требование</li>
+        <li style="color:var(--text);opacity:0.7" class="rc-redteam-li">Сертификации стоят $500–2000 за штуку</li>
+        <li style="color:var(--red);opacity:1" class="rc-redteam-li">Бизнес не хочет тратить на ИБ — ты продаёшь страх</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- XSS ALERT OVERLAY -->
+<div id="xss-alert-overlay">
+  <div class="xss-alert-box">
+    <div class="xss-alert-title">⚠ XSS АТАКА ВЫПОЛНЕНА</div>
+    <div class="xss-alert-msg" id="xss-alert-msg">Скрипт выполнился в браузере жертвы.<br><br>В реальной атаке здесь был бы кражей куки сессии или перенаправлением на фишинговый сайт.</div>
+    <button class="xss-alert-close" onclick="closeXSSAlert()">[ ЗАКРЫТЬ ]</button>
+  </div>
+</div>
+
+<hr class="divider">
+<footer>
+  SEC//LAB · УЧЕБНЫЙ МОДУЛЬ 01 · ВСЕ АТАКИ ВЫПОЛНЕНЫ В ИЗОЛИРОВАННОЙ СРЕДЕ · ТОЛЬКО ДЛЯ ОБРАЗОВАТЕЛЬНЫХ ЦЕЛЕЙ
+</footer>
+
+<script>
+// CURSOR
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top = e.clientY - 9 + 'px';
+});
+
+// SCORE SYSTEM
+let scores = { sql:0, scan:0, crack:0, xss:0, sniff:0 };
+let totalScore = 0;
+
+function addScore(lab, pts) {
+  if (scores[lab] > 0) return;
+  scores[lab] = pts;
+  totalScore += pts;
+  const display = document.getElementById('score-display');
+  let current = parseInt(display.textContent) || 0;
+  const target = totalScore;
+  const step = Math.ceil((target - current) / 20);
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    display.textContent = String(current).padStart(3,'0');
+    if (current >= target) clearInterval(interval);
+  }, 50);
+
+  const barMap = {sql:'bar-sql', scan:'bar-scan', crack:'bar-crack', xss:'bar-xss', sniff:'bar-sniff'};
+  const pctMap = {sql:100, scan:80, crack:100, xss:100, sniff:80};
+  setTimeout(() => {
+    const bar = document.getElementById(barMap[lab]);
+    if (bar) bar.style.height = pctMap[lab] + '%';
+  }, 100);
+}
+
+// ═══ LAB 1: SQL INJECTION ═══
+function doSQLAttack() {
+  const login = document.getElementById('sql-login').value.trim();
+  const pass = document.getElementById('sql-pass').value.trim();
+  const result = document.getElementById('lab1-result');
+  const explain = document.getElementById('sql-explain');
+
+  const injectionPatterns = [
+    /'\s*OR\s*['"]?1['"]?\s*=\s*['"]?1/i,
+    /'\s*--/,
+    /'\s*;\s*DROP/i,
+    /'\s*UNION/i,
+    /admin'\s*--/i,
+    /'\s*OR\s*1\s*=\s*1/i,
+    /"\s*OR\s*"1"\s*=\s*"1/i,
+  ];
+
+  const isInjection = injectionPatterns.some(p => p.test(login) || p.test(pass));
+
+  if (isInjection) {
+    result.style.display = 'block';
+    result.className = 'result-success';
+    result.innerHTML = `
+      <div style="color:var(--green);margin-bottom:0.5rem">✓ ДОСТУП ПОЛУЧЕН</div>
+      <div style="font-size:0.72rem;opacity:0.8">Пользователь: admin<br>Роль: ADMINISTRATOR<br>Email: admin@corp.local<br>Последний вход: сегодня 09:42</div>
+      <div style="margin-top:0.75rem;font-size:0.7rem;color:var(--yellow)">SQL-запрос был изменён твоим вводом</div>
+    `;
+    explain.style.display = 'block';
+    explain.className = 'explain-panel show';
+    if (login.includes('--') || pass.includes('--')) {
+      explain.innerHTML = `<strong>Что произошло:</strong> Символы <strong>'--</strong> закомментировали проверку пароля. Итоговый запрос: <br><br><span style="color:var(--cyan)">SELECT * FROM users WHERE login='admin'--' AND password='...'</span><br><br>Всё после -- игнорируется. Проверка пароля исчезла.`;
+    } else {
+      explain.innerHTML = `<strong>Что произошло:</strong> Конструкция <strong>OR '1'='1'</strong> всегда истинна. Итоговый запрос:<br><br><span style="color:var(--cyan)">SELECT * FROM users WHERE login='' OR '1'='1' AND password='...'</span><br><br>Условие всегда возвращает первую строку таблицы — обычно администратора.`;
+    }
+    addScore('sql', 100);
+  } else if (login === 'admin' && pass === 'password') {
+    result.style.display = 'block';
+    result.className = 'result-success';
+    result.innerHTML = `<div style="color:var(--green)">✓ Вход выполнен (правильный логин/пароль)</div>`;
+    explain.style.display = 'none';
+  } else {
+    result.style.display = 'block';
+    result.className = 'result-fail';
+    result.innerHTML = `<div>✗ Неверный логин или пароль</div><div style="font-size:0.7rem;margin-top:0.5rem;opacity:0.7">Попробуй инъекцию: <span style="color:var(--yellow)">' OR '1'='1</span></div>`;
+    explain.style.display = 'none';
+  }
+}
+
+document.getElementById('sql-login').addEventListener('keydown', e => { if(e.key==='Enter') doSQLAttack(); });
+document.getElementById('sql-pass').addEventListener('keydown', e => { if(e.key==='Enter') doSQLAttack(); });
+
+// ═══ LAB 2: PORT SCANNER ═══
+const portScenarios = {
+  default: [
+    {port:21,state:'open',service:'FTP'},{port:22,state:'open',service:'SSH'},
+    {port:23,state:'filtered',service:'TELNET'},{port:25,state:'closed',service:'SMTP'},
+    {port:53,state:'open',service:'DNS'},{port:80,state:'open',service:'HTTP'},
+    {port:110,state:'closed',service:'POP3'},{port:135,state:'filtered',service:'MSRPC'},
+    {port:139,state:'filtered',service:'NETBIOS'},{port:143,state:'closed',service:'IMAP'},
+    {port:443,state:'open',service:'HTTPS'},{port:445,state:'filtered',service:'SMB'},
+    {port:1433,state:'closed',service:'MSSQL'},{port:3306,state:'open',service:'MYSQL'},
+    {port:3389,state:'open',service:'RDP'},{port:5432,state:'closed',service:'PSQL'},
+  ]
+};
+
+let scanRunning = false;
+
+function runPortScan() {
+  if (scanRunning) return;
+  scanRunning = true;
+  const grid = document.getElementById('scan-grid');
+  const term = document.getElementById('scan-terminal');
+  const target = document.getElementById('scan-target').value || '192.168.1.1';
+
+  const ports = portScenarios.default;
+  grid.innerHTML = '';
+  ports.forEach(p => {
+    const cell = document.createElement('div');
+    cell.className = 'port-cell';
+    cell.id = 'port-' + p.port;
+    cell.title = p.port + ' / ' + p.service;
+    cell.textContent = p.port;
+    grid.appendChild(cell);
+  });
+
+  term.innerHTML = `<div class="terminal-topbar"><div class="tbar-dot tbar-r"></div><div class="tbar-dot tbar-y"></div><div class="tbar-dot tbar-g"></div></div>`;
+  appendTerm(term, `<span class="t-prompt">nmap $ </span><span class="t-cmd">nmap -sV -T4 ${target}</span>`);
+  appendTerm(term, `<span class="t-out">Starting Nmap scan on ${target}...</span>`);
+
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i >= ports.length) {
+      clearInterval(interval);
+      scanRunning = false;
+      appendTerm(term, `<span class="t-success">Scan complete. ${ports.filter(p=>p.state==='open').length} open ports found.</span>`);
+      const openPorts = ports.filter(p=>p.state==='open').map(p=>`${p.port}/${p.service}`).join(', ');
+      appendTerm(term, `<span class="t-warn">⚠ OPEN: ${openPorts}</span>`);
+      appendTerm(term, `<span class="t-error">CRITICAL: Port 3306 (MySQL) open — database exposed!</span>`);
+      addScore('scan', 80);
+      return;
+    }
+    const p = ports[i];
+    const cell = document.getElementById('port-' + p.port);
+    cell.classList.add('scanning');
+    setTimeout(() => {
+      cell.classList.remove('scanning');
+      cell.classList.add(p.state);
+      if (p.state === 'open') cell.textContent = p.service.length > 5 ? p.port : p.service;
+      appendTerm(term, `<span class="${p.state==='open'?'t-success':p.state==='filtered'?'t-warn':'t-out'}">${p.port}/tcp\t${p.state}\t${p.service}</span>`);
+      term.scrollTop = term.scrollHeight;
+    }, 200);
+    i++;
+  }, 280);
+}
+
+function appendTerm(el, html) {
+  const line = document.createElement('div');
+  line.className = 't-line';
+  line.innerHTML = html;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ═══ LAB 3: HASH CRACKER ═══
+const wordlist = ['123456','password','qwerty','letmein','dragon','master','superman','batman',
+  'abc123','monkey','shadow','pass123','iloveyou','admin','welcome','hello','sunshine',
+  'princess','football','password1','secret','123123','test','guest','root'];
+
+// MD5 simple (for demo - precomputed)
+const md5Table = {
+  '123456': 'e10adc3949ba59abbe56e057f20f883e',
+  'password': '5f4dcc3b5aa765d61d8327deb882cf99',
+  'qwerty': 'd8578edf8458ce06fbc5bb76a58c5ca4',
+  'letmein': '0d107d09f5bbe40cade3de5c71e9e9b7',
+  'dragon': '8621ffdbc5698829397d97767ac13db3',
+  'master': '3b4c0b9eff9a1b8e9f7a4e3b2c1d0a9f',
+  'abc123': 'e99a18c428cb38d5f260853678922e03',
+  'monkey': 'd0763edaa9d9bd2a9516280e9044d885',
+  'iloveyou': 'f25a2fc72690b780b2a14e140ef6a9e0',
+  'admin': '21232f297a57a5a743894a0e4a801fc3',
+  'welcome': '40be4e59b9a2a2b5dffb918c0e86b3d7',
+  'sunshine': '0571749e2ac330a7455809c6b0e7af90',
+  'shadow': '67aeea294e1cb515236c246b68fb3f03',
+  'hello': '5d41402abc4b2a76b9719d911017c592',
+};
+
+const targetHash = '5f4dcc3b5aa765d61d8327deb882cf99'; // password
+let cracking = false;
+
+function initWordlist() {
+  const el = document.getElementById('wordlist');
+  el.innerHTML = wordlist.map((w,i) => `<div class="wordlist-item" id="wl-${i}">${w}</div>`).join('');
+}
+
+initWordlist();
+
+function startCrack() {
+  if (cracking) return;
+  cracking = true;
+  document.getElementById('crack-btn').textContent = '⟳ ВЗЛОМ...';
+
+  let i = 0;
+  const fill = document.getElementById('crack-fill');
+  const explain = document.getElementById('crack-explain');
+
+  const interval = setInterval(() => {
+    if (i > 0) {
+      const prev = document.getElementById('wl-' + (i-1));
+      if (prev) prev.classList.remove('trying');
+      if (prev) prev.style.opacity = '0.3';
+    }
+
+    if (i >= wordlist.length) {
+      clearInterval(interval);
+      cracking = false;
+      return;
+    }
+
+    const word = wordlist[i];
+    const item = document.getElementById('wl-' + i);
+    if (item) {
+      item.classList.add('trying');
+      document.getElementById('wordlist').scrollTop = item.offsetTop - 40;
+    }
+
+    fill.style.width = ((i+1) / wordlist.length * 100) + '%';
+    const hash = md5Table[word] || 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+
+    if (hash === targetHash) {
+      clearInterval(interval);
+      if (item) item.classList.remove('trying');
+      if (item) item.classList.add('found');
+      document.getElementById('crack-btn').textContent = '✓ ВЗЛОМАН';
+      explain.style.display = 'block';
+      explain.className = 'explain-panel show';
+      explain.innerHTML = `<strong style="color:var(--green)">ПАРОЛЬ НАЙДЕН: "${word}"</strong><br><br>Хэш <span style="color:var(--cyan)">${targetHash}</span> соответствует слову из словаря.<br><br>Именно поэтому простые пароли опасны — они мгновенно взламываются по словарю. Современные алгоритмы (bcrypt, Argon2) с солью делают такую атаку практически невозможной.`;
+      addScore('crack', 100);
+      cracking = false;
+      return;
+    }
+    i++;
+  }, 120);
+}
+
+// ═══ LAB 4: XSS ═══
+const comments = [];
+
+function postXSS() {
+  const input = document.getElementById('xss-input').value;
+  const commentsEl = document.getElementById('xss-comments');
+  const explain = document.getElementById('xss-explain');
+
+  if (!input.trim()) return;
+
+  const xssPatterns = [
+    /<script[\s\S]*?>/i,
+    /javascript:/i,
+    /onerror\s*=/i,
+    /onload\s*=/i,
+    /onclick\s*=/i,
+    /onmouseover\s*=/i,
+    /<img[^>]+onerror/i,
+    /alert\s*\(/i,
+    /document\.cookie/i,
+  ];
+
+  const isXSS = xssPatterns.some(p => p.test(input));
+
+  // Add comment visually
+  const box = document.createElement('div');
+  box.className = 'xss-comment-box';
+  box.innerHTML = `<div class="xss-comment-user">гость_${Math.floor(Math.random()*999)}:</div><div class="xss-comment-text">${isXSS ? '<span style="color:var(--red)">[ВРЕДОНОСНЫЙ КОД ВНЕДРЁН]</span> ' + input.substring(0,50) + '...' : input}</div>`;
+  commentsEl.appendChild(box);
+
+  document.getElementById('xss-input').value = '';
+
+  if (isXSS) {
+    setTimeout(() => {
+      const overlay = document.getElementById('xss-alert-overlay');
+      overlay.classList.add('show');
+      let msg = 'JavaScript-код выполнился в браузере жертвы.<br><br>';
+      if (input.toLowerCase().includes('document.cookie')) {
+        msg += 'Украдены куки сессии:<br><span style="color:var(--red);font-size:0.8rem">session_id=a3f9b2c1d4e5f678; auth_token=eyJhbGci...</span>';
+      } else {
+        msg += 'В реальной атаке здесь была бы кража куки сессии или перенаправление на фишинговый сайт.';
+      }
+      document.getElementById('xss-alert-msg').innerHTML = msg;
+      addScore('xss', 100);
+
+      explain.style.display = 'block';
+      explain.className = 'explain-panel show';
+      explain.innerHTML = `<strong>Почему это сработало:</strong> Сайт вывел твой ввод напрямую в HTML без экранирования. Тег <strong>&lt;script&gt;</strong> выполнился как код.<br><br><strong>Защита:</strong> Функция <strong>htmlspecialchars()</strong> в PHP или <strong>textContent</strong> вместо <strong>innerHTML</strong> в JS — полностью предотвращают XSS.`;
+    }, 300);
+  }
+}
+
+function closeXSSAlert() {
+  document.getElementById('xss-alert-overlay').classList.remove('show');
+}
+
+document.getElementById('xss-input').addEventListener('keydown', e => { if(e.key==='Enter') postXSS(); });
+
+// ═══ LAB 5: NETWORK SNIFFER ═══
+const packetData = [
+  {time:'00:00:01',src:'192.168.1.5',dst:'8.8.8.8',proto:'DNS',data:'Query: google.com',cls:'dns'},
+  {time:'00:00:01',src:'8.8.8.8',dst:'192.168.1.5',proto:'DNS',data:'Reply: 142.250.74.46',cls:'dns'},
+  {time:'00:00:02',src:'192.168.1.5',dst:'142.250.74.46',proto:'HTTPS',data:'TLS Handshake',cls:'https'},
+  {time:'00:00:03',src:'192.168.1.7',dst:'192.168.1.1',proto:'HTTP',data:'GET /login.php',cls:'http'},
+  {time:'00:00:04',src:'192.168.1.7',dst:'192.168.1.1',proto:'HTTP',data:'POST login=admin&pass=qwerty123',cls:'http suspicious'},
+  {time:'00:00:05',src:'192.168.1.1',dst:'192.168.1.7',proto:'HTTP',data:'200 OK Set-Cookie: session=abc123',cls:'http suspicious'},
+  {time:'00:00:06',src:'192.168.1.12',dst:'192.168.1.1',proto:'TCP',data:'SYN port:80',cls:'tcp'},
+  {time:'00:00:06',src:'192.168.1.12',dst:'192.168.1.1',proto:'TCP',data:'SYN port:443',cls:'tcp'},
+  {time:'00:00:07',src:'192.168.1.12',dst:'192.168.1.1',proto:'TCP',data:'SYN port:22',cls:'tcp suspicious'},
+  {time:'00:00:07',src:'192.168.1.12',dst:'192.168.1.1',proto:'TCP',data:'SYN port:3306',cls:'tcp suspicious'},
+  {time:'00:00:08',src:'192.168.1.12',dst:'192.168.1.1',proto:'TCP',data:'SYN port:3389',cls:'tcp suspicious'},
+  {time:'00:00:09',src:'192.168.1.3',dst:'1.3.3.7',proto:'DNS',data:'Query: evil-c2.xyz',cls:'dns suspicious'},
+  {time:'00:00:10',src:'192.168.1.3',dst:'1.3.3.7',proto:'HTTPS',data:'Encrypted data 4.2KB',cls:'https suspicious'},
+  {time:'00:00:11',src:'192.168.1.5',dst:'142.250.74.46',proto:'HTTPS',data:'GET /search?q=...',cls:'https'},
+  {time:'00:00:12',src:'192.168.1.8',dst:'255.255.255.255',proto:'ARP',data:'Who has 192.168.1.1?',cls:'tcp suspicious'},
+];
+
+let sniffRunning = false;
+let sniffTimer = null;
+
+function startSniff() {
+  if (sniffRunning) return;
+  sniffRunning = true;
+  document.getElementById('sniff-btn').style.display = 'none';
+  document.getElementById('sniff-stop').style.display = 'block';
+  const stream = document.getElementById('packet-stream');
+  stream.innerHTML = '';
+
+  let i = 0;
+  const explain = document.getElementById('sniff-explain');
+
+  sniffTimer = setInterval(() => {
+    if (i >= packetData.length) {
+      stopSniff();
+      explain.style.display = 'block';
+      explain.className = 'explain-panel show';
+      explain.innerHTML = `<strong>Что ты увидел:</strong><br><br>
+        🔴 <strong style="color:var(--red)">Строка 5:</strong> Пароль <strong>qwerty123</strong> передан в открытом HTTP без шифрования — виден любому в сети<br>
+        🔴 <strong style="color:var(--red)">Строки 9–11:</strong> .12 сканирует порты 22, 3306, 3389 — признак разведки перед атакой<br>
+        🔴 <strong style="color:var(--red)">Строка 12:</strong> .3 обращается к домену evil-c2.xyz — признак malware C2-соединения<br>
+        🔴 <strong style="color:var(--red)">Строка 15:</strong> ARP broadcast — возможная атака ARP poisoning (MITM)`;
+      addScore('sniff', 80);
+      return;
+    }
+
+    const p = packetData[i];
+    const row = document.createElement('div');
+    row.className = 'packet ' + p.cls;
+    row.innerHTML = `<span>${p.time}</span><span>${p.src}</span><span>${p.dst}</span><span>${p.proto}</span><span>${p.data}</span>`;
+    if (p.cls.includes('suspicious')) {
+      row.title = '⚠ Подозрительный пакет';
+    }
+    stream.appendChild(row);
+    stream.scrollTop = stream.scrollHeight;
+    i++;
+  }, 400);
+}
+
+function stopSniff() {
+  sniffRunning = false;
+  clearInterval(sniffTimer);
+  document.getElementById('sniff-btn').style.display = 'block';
+  document.getElementById('sniff-stop').style.display = 'none';
+}
+
+// SCROLL REVEAL
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>

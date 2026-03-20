@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ГЕЙМДЕВ — Урок 01</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d1a;
+  --surface: #12122a;
+  --surface2: #1a1a3a;
+  --border: #2a2a5a;
+  --pixel: #f7f718;
+  --pink: #ff2d78;
+  --cyan: #18f7f7;
+  --purple: #9b30ff;
+  --green: #30ff7a;
+  --orange: #ff8c30;
+  --text: #e0e0ff;
+  --muted: #5050aa;
+  --white: #ffffff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 400;
+  overflow-x: hidden;
+}
+
+/* SCANLINE TOP */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px);
+  pointer-events:none; z-index:9000;
+}
+
+/* PIXEL CURSOR */
+*, *:hover { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='0' y='0' width='4' height='4' fill='%23f7f718'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%23f7f718'/%3E%3Crect x='8' y='8' width='4' height='4' fill='%23f7f718'/%3E%3C/svg%3E") 0 0, crosshair; }
+
+/* NAV */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  background: rgba(13,13,26,0.95);
+  border-bottom: 2px solid var(--pixel);
+  padding: 0 2rem;
+  display: flex; align-items: center; gap: 2rem;
+  height: 52px;
+  image-rendering: pixelated;
+}
+
+.nav-logo {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+  color: var(--pixel);
+  letter-spacing: 0.05em;
+  text-shadow: 2px 2px 0 rgba(247,247,24,0.3);
+  white-space: nowrap;
+}
+
+.nav-lives {
+  display: flex; gap: 0.3rem; align-items: center;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--pink);
+}
+
+.heart { color: var(--pink); font-size: 0.8rem; }
+
+.nav-score {
+  margin-left: auto;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  color: var(--pixel);
+}
+
+.nav-links { display:flex; gap:1.5rem; list-style:none; }
+.nav-links a {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.45rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: color 0.1s;
+}
+.nav-links a:hover { color: var(--pixel); }
+
+@media(max-width:700px){ .nav-links{display:none;} }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  padding: 5rem 2rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* PIXEL STAR BG */
+.stars-canvas {
+  position: absolute; inset:0;
+  pointer-events:none;
+}
+
+.hero-eyebrow {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 2rem;
+  opacity:0; animation: fadeUp 0.6s ease 0.2s forwards;
+}
+
+.hero h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(1.4rem, 5vw, 3.5rem);
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  opacity:0; animation: fadeUp 0.6s ease 0.4s forwards;
+}
+
+.hero h1 .y { color: var(--pixel); text-shadow: 3px 3px 0 rgba(247,247,24,0.25); }
+.hero h1 .p { color: var(--pink); text-shadow: 3px 3px 0 rgba(255,45,120,0.25); }
+.hero h1 .c { color: var(--cyan); }
+
+.hero-sub {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--text);
+  opacity: 0;
+  max-width: 580px;
+  line-height: 1.8;
+  margin: 2rem 0 3rem;
+  animation: fadeUp 0.6s ease 0.6s forwards;
+}
+
+/* PIXEL PLAYER */
+.pixel-guy {
+  display: grid;
+  grid-template-columns: repeat(8,8px);
+  grid-template-rows: repeat(8,8px);
+  gap: 1px;
+  margin: 2rem auto;
+  opacity:0; animation: fadeUp 0.6s ease 0.8s forwards;
+}
+.pg { width:8px; height:8px; }
+.pg.h { background: var(--pink); }
+.pg.s { background: var(--cyan); }
+.pg.b { background: #3333aa; }
+.pg.e { background: transparent; }
+.pg.y2 { background: var(--pixel); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.press-start {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  color: var(--pixel);
+  animation: blink 1s step-end infinite;
+  margin-top: 1rem;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* DIVIDER */
+.divider {
+  border: none;
+  border-top: 2px solid var(--border);
+  position: relative;
+}
+.divider::before {
+  content: '▓▒░';
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: -0.7rem;
+  background: var(--bg);
+  padding: 0 1rem;
+  color: var(--border);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+}
+
+/* SECTIONS */
+.section { max-width:1100px; margin:0 auto; padding:5rem 2rem; }
+
+.sec-eyebrow {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+
+.sec-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.9rem, 2.5vw, 1.6rem);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: var(--white);
+}
+
+.sec-desc {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--text);
+  opacity: 0.65;
+  max-width: 650px;
+  line-height: 1.8;
+  margin-bottom: 3rem;
+}
+
+/* CONCEPT CARDS */
+.concepts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+  gap: 2px;
+  background: var(--border);
+  border: 2px solid var(--border);
+  margin-top:2rem;
+}
+
+.concept-card {
+  background: var(--surface);
+  padding: 2rem;
+  position: relative;
+  transition: background 0.2s;
+  overflow: hidden;
+}
+
+.concept-card:hover { background: var(--surface2); }
+
+.concept-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--c-color, var(--pixel));
+}
+
+.concept-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.concept-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  color: var(--c-color, var(--pixel));
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.concept-desc {
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: var(--text);
+  opacity: 0.7;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════
+   LABS
+   ═══════════════════════ */
+
+.labs { display:flex; flex-direction:column; gap:5rem; }
+
+.lab {
+  border: 2px solid var(--border);
+  background: var(--surface);
+  position: relative;
+}
+
+.lab::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--lab-color, var(--pixel));
+  box-shadow: 0 0 12px var(--lab-color, var(--pixel));
+}
+
+.lab-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid var(--border);
+  display: flex; align-items:center; gap:1rem; flex-wrap:wrap;
+}
+
+.lab-num {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--muted);
+}
+
+.lab-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+  color: var(--lab-color, var(--pixel));
+  line-height:1.5;
+}
+
+.lab-tag {
+  margin-left:auto;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.42rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--lab-color, var(--pixel));
+  color: var(--lab-color, var(--pixel));
+}
+
+.lab-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+@media(max-width:750px){ .lab-body{ grid-template-columns:1fr; } }
+
+.lab-info {
+  padding: 2rem;
+  border-right: 2px solid var(--border);
+}
+
+@media(max-width:750px){ .lab-info{ border-right:none; border-bottom:2px solid var(--border); } }
+
+.lab-info h4 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--muted);
+  letter-spacing:0.15em;
+  margin-bottom:1rem;
+}
+
+.lab-info p, .lab-info li {
+  font-size: 0.9rem;
+  font-weight:300;
+  color: var(--text);
+  opacity:0.7;
+  line-height:1.8;
+  margin-bottom:0.5rem;
+}
+
+.lab-info ul { list-style:none; }
+.lab-info li::before { content:'▸ '; color: var(--lab-color, var(--pixel)); }
+
+.code-block {
+  background: #070714;
+  border: 1px solid var(--border);
+  padding: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 2;
+  margin: 1rem 0;
+  overflow-x:auto;
+}
+
+.kw { color: var(--purple); }
+.fn { color: var(--cyan); }
+.num { color: var(--orange); }
+.str { color: var(--green); }
+.cm { color: var(--muted); }
+.var2 { color: var(--text); }
+
+.lab-demo { padding: 2rem; }
+
+.lab-demo h4 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--muted);
+  letter-spacing:0.15em;
+  margin-bottom:1rem;
+}
+
+/* CANVAS wrapper */
+.canvas-wrap {
+  background: #000;
+  border: 2px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+canvas { display:block; image-rendering: pixelated; }
+
+.canvas-overlay {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(0,0,0,0.7);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  color: var(--pixel);
+  text-align:center;
+  line-height: 2;
+  transition: opacity 0.3s;
+}
+
+.canvas-overlay.hidden { opacity:0; pointer-events:none; }
+
+.controls-row {
+  display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;
+}
+
+.btn-pixel {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.48rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  letter-spacing:0.05em;
+  transition: all 0.1s;
+}
+
+.btn-pixel:hover {
+  border-color: var(--lab-color, var(--pixel));
+  color: var(--lab-color, var(--pixel));
+  background: var(--surface);
+}
+
+.btn-pixel.primary {
+  background: var(--lab-color, var(--pixel));
+  border-color: var(--lab-color, var(--pixel));
+  color: #000;
+}
+
+.btn-pixel.primary:hover {
+  opacity:0.85; color:#000;
+}
+
+.param-row {
+  display:flex; align-items:center; gap:0.75rem;
+  margin-bottom:0.75rem;
+  flex-wrap:wrap;
+}
+
+.param-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  min-width: 90px;
+}
+
+input[type=range] {
+  flex:1; min-width:80px;
+  accent-color: var(--lab-color, var(--pixel));
+  height: 4px;
+}
+
+.param-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--lab-color, var(--pixel));
+  min-width:36px;
+}
+
+.info-box {
+  background: rgba(247,247,24,0.04);
+  border: 1px solid rgba(247,247,24,0.15);
+  border-left: 3px solid var(--lab-color, var(--pixel));
+  padding: 1rem;
+  font-size: 0.82rem;
+  font-weight:300;
+  color: var(--text);
+  opacity:0.8;
+  line-height:1.7;
+  margin-top:1rem;
+  display:none;
+}
+.info-box.show { display:block; }
+.info-box strong { color: var(--lab-color, var(--pixel)); }
+
+/* GAME STATS */
+.game-stat {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+.game-stat span { color: var(--pixel); }
+
+/* TRUTH SECTION */
+.truth-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px,1fr));
+  gap:2px;
+  background: var(--border);
+  border:2px solid var(--border);
+  margin-top:2rem;
+}
+
+.truth-card {
+  background: var(--surface);
+  padding:2rem;
+  position:relative;
+}
+
+.truth-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--tc-color, var(--pixel));
+}
+
+.tc-icon { font-size:1.8rem; margin-bottom:1rem; display:block; }
+
+.tc-head {
+  font-family:'Press Start 2P',monospace;
+  font-size:0.55rem;
+  color: var(--tc-color, var(--pixel));
+  line-height:1.6;
+  margin-bottom:0.75rem;
+}
+
+.tc-body {
+  font-size:0.88rem;
+  font-weight:300;
+  color:var(--text);
+  opacity:0.7;
+  line-height:1.7;
+}
+
+/* SALARY */
+.salary-section {
+  margin-top:3rem;
+}
+
+.salary-table {
+  width:100%;
+  border-collapse:collapse;
+  border:2px solid var(--border);
+  font-size:0.88rem;
+}
+
+.salary-table th {
+  font-family:'Press Start 2P',monospace;
+  font-size:0.45rem;
+  padding:1rem;
+  background:var(--surface2);
+  color:var(--muted);
+  letter-spacing:0.1em;
+  text-align:left;
+  border-bottom:2px solid var(--border);
+}
+
+.salary-table td {
+  padding:0.9rem 1rem;
+  border-bottom:1px solid var(--border);
+  font-weight:300;
+}
+
+.salary-table tr:last-child td { border-bottom:none; }
+.salary-table tr:hover td { background:var(--surface2); }
+
+.tag-role {
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;
+  padding:0.15rem 0.4rem;
+  background:var(--surface2);
+  border:1px solid var(--border);
+}
+
+/* ROADMAP */
+.roadmap { position:relative; padding-left:2rem; margin-top:3rem; }
+.roadmap::before {
+  content:'';
+  position:absolute;
+  left:9px; top:0; bottom:0; width:2px;
+  background: repeating-linear-gradient(to bottom, var(--pixel) 0, var(--pixel) 6px, transparent 6px, transparent 12px);
+}
+
+.rm-item {
+  position:relative;
+  padding:0 0 3rem 2.5rem;
+  opacity:0; transform:translateX(-15px);
+  transition:all 0.5s ease;
+}
+
+.rm-item.visible { opacity:1; transform:translateX(0); }
+
+.rm-dot {
+  position:absolute;
+  left:-0.5rem; top:0.2rem;
+  width:18px; height:18px;
+  background:var(--bg);
+  border:2px solid var(--pixel);
+  font-family:'Press Start 2P',monospace;
+  font-size:0.4rem;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--pixel);
+}
+
+.rm-phase {
+  font-family:'Press Start 2P',monospace;
+  font-size:0.45rem;
+  color:var(--muted);
+  letter-spacing:0.15em;
+  margin-bottom:0.5rem;
+}
+
+.rm-title {
+  font-family:'Press Start 2P',monospace;
+  font-size:0.65rem;
+  color:var(--pixel);
+  line-height:1.5;
+  margin-bottom:0.5rem;
+}
+
+.rm-desc {
+  font-size:0.9rem;
+  font-weight:300;
+  color:var(--text);
+  opacity:0.65;
+  line-height:1.7;
+}
+
+/* FOOTER */
+footer {
+  border-top:2px solid var(--border);
+  padding:3rem 2rem;
+  text-align:center;
+  max-width:1100px;
+  margin:0 auto;
+}
+
+.footer-logo {
+  font-family:'Press Start 2P',monospace;
+  font-size:0.7rem;
+  color:var(--pixel);
+  margin-bottom:0.75rem;
+  text-shadow:2px 2px 0 rgba(247,247,24,0.2);
+}
+
+footer p {
+  font-size:0.8rem;
+  font-weight:300;
+  color:var(--muted);
+}
+
+/* REVEAL */
+.reveal { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* PIXEL ART SPRITES (CSS) */
+.sprite-container {
+  display:flex; gap:2rem; align-items:center; flex-wrap:wrap; margin:1rem 0;
+}
+
+.sprite { image-rendering:pixelated; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">GAMEDEV.EXE</div>
+  <div class="nav-lives">
+    <span class="heart">♥</span><span class="heart">♥</span><span class="heart">♥</span>
+    LIVES: 3
+  </div>
+  <div class="nav-score" id="nav-score">SCORE: 00000</div>
+  <ul class="nav-links">
+    <li><a href="#concepts">КОНЦЕПТЫ</a></li>
+    <li><a href="#labs">ЛАБЫ</a></li>
+    <li><a href="#truth">ПРАВДА</a></li>
+    <li><a href="#roadmap">СТАРТ</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <canvas class="stars-canvas" id="starsCanvas"></canvas>
+
+  <div class="hero-eyebrow">// УРОК 01 · РАЗРАБОТКА ИГР</div>
+  <h1>
+    <span class="y">GAME</span><br>
+    <span class="p">DEV</span><br>
+    <span class="c">101</span>
+  </h1>
+
+  <!-- PIXEL CHARACTER -->
+  <div class="pixel-guy" style="margin-top:2.5rem">
+    <!-- row 1: head top -->
+    <div class="pg e"></div><div class="pg h"></div><div class="pg h"></div><div class="pg h"></div><div class="pg h"></div><div class="pg h"></div><div class="pg h"></div><div class="pg e"></div>
+    <!-- row 2: face -->
+    <div class="pg h"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg h"></div>
+    <!-- row 3: eyes -->
+    <div class="pg y2"></div><div class="pg y2"></div><div class="pg b"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg b"></div><div class="pg y2"></div><div class="pg y2"></div>
+    <!-- row 4: mouth -->
+    <div class="pg y2"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg b"></div><div class="pg b"></div><div class="pg y2"></div><div class="pg y2"></div><div class="pg y2"></div>
+    <!-- row 5: body -->
+    <div class="pg e"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg e"></div>
+    <!-- row 6: body2 -->
+    <div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div><div class="pg s"></div>
+    <!-- row 7: legs -->
+    <div class="pg e"></div><div class="pg b"></div><div class="pg b"></div><div class="pg e"></div><div class="pg e"></div><div class="pg b"></div><div class="pg b"></div><div class="pg e"></div>
+    <!-- row 8: feet -->
+    <div class="pg b"></div><div class="pg b"></div><div class="pg e"></div><div class="pg e"></div><div class="pg e"></div><div class="pg e"></div><div class="pg b"></div><div class="pg b"></div>
+  </div>
+
+  <p class="hero-sub">Создавай реальные игровые механики прямо в браузере. Физика, коллизии, частицы, искусственный интеллект — всё это работает здесь и сейчас.</p>
+  <div class="press-start">▼ PRESS START ▼</div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="divider"></div>
+<div class="section" id="concepts">
+  <div class="reveal">
+    <div class="sec-eyebrow">// 01 — ОСНОВЫ</div>
+    <h2 class="sec-title">ИЗ ЧЕГО СОСТОИТ ИГРА</h2>
+    <p class="sec-desc">Любая игра — от Pong до Red Dead Redemption — строится на одних и тех же фундаментальных концепциях.</p>
+  </div>
+
+  <div class="concepts reveal">
+    <div class="concept-card" style="--c-color:var(--pixel)">
+      <span class="concept-icon">🔄</span>
+      <div class="concept-title">GAME LOOP</div>
+      <div class="concept-desc">Сердце любой игры. Бесконечный цикл: принять ввод → обновить состояние → нарисовать кадр. 60 раз в секунду. Остановился — игра зависла.</div>
+    </div>
+    <div class="concept-card" style="--c-color:var(--pink)">
+      <span class="concept-icon">📦</span>
+      <div class="concept-title">GAME OBJECT</div>
+      <div class="concept-desc">Каждая сущность в игре — объект. У него есть позиция, скорость, спрайт, коллайдер. Игрок, враг, пуля, платформа — всё это Game Objects.</div>
+    </div>
+    <div class="concept-card" style="--c-color:var(--cyan)">
+      <span class="concept-icon">⚡</span>
+      <div class="concept-title">DELTA TIME</div>
+      <div class="concept-desc">Время между кадрами. Умножай скорость на delta time — и игра будет одинаково быстрой на любом железе. Без этого — на мощном ПК всё летит.</div>
+    </div>
+    <div class="concept-card" style="--c-color:var(--purple)">
+      <span class="concept-icon">💥</span>
+      <div class="concept-title">КОЛЛИЗИИ</div>
+      <div class="concept-desc">Обнаружение столкновений. AABB (прямоугольники), circle (окружности), полигоны. Без коллизий — персонаж проваливается сквозь пол.</div>
+    </div>
+    <div class="concept-card" style="--c-color:var(--green)">
+      <span class="concept-icon">🎯</span>
+      <div class="concept-title">ФИЗИКА</div>
+      <div class="concept-desc">Гравитация, трение, импульс. Реальная физика выглядит скучно — хорошая игровая физика утрирована и ощущается правильно, но законам не подчиняется.</div>
+    </div>
+    <div class="concept-card" style="--c-color:var(--orange)">
+      <span class="concept-icon">🧠</span>
+      <div class="concept-title">GAME AI</div>
+      <div class="concept-desc">Конечные автоматы (FSM), поиск пути (A*), поведенческие деревья. Не настоящий ИИ — набор правил "если вижу игрока → атакую".</div>
+    </div>
+  </div>
+</div>
+
+<!-- LABS -->
+<div class="divider"></div>
+<div class="section" id="labs">
+  <div class="reveal">
+    <div class="sec-eyebrow">// 02 — ПРАКТИКА</div>
+    <h2 class="sec-title">ИГРОВЫЕ МЕХАНИКИ<br>В РЕАЛЬНОМ КОДЕ</h2>
+    <p class="sec-desc">Четыре интерактивные лабы. Крути параметры, смотри что меняется — и понимай как работает геймдев изнутри.</p>
+  </div>
+
+  <div class="labs reveal">
+
+    <!-- ═══ LAB 1: PHYSICS ═══ -->
+    <div class="lab" style="--lab-color:var(--pixel)">
+      <div class="lab-header">
+        <div class="lab-num">LAB-01</div>
+        <div class="lab-title">ФИЗИКА И ПРЫЖОК</div>
+        <div class="lab-tag">ФИЗИКА</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-info">
+          <h4>// КАК РАБОТАЕТ ПРЫЖОК</h4>
+          <p>Прыжок — это просто отрицательная вертикальная скорость + гравитация которая её уменьшает каждый кадр.</p>
+          <div class="code-block">
+<span class="cm">// Каждый кадр:</span>
+<span class="kw">if</span> (<span class="var2">onGround</span> && <span class="var2">jumpPressed</span>) {
+  <span class="var2">vy</span> = <span class="num">-12</span>; <span class="cm">// вверх</span>
+}
+<span class="var2">vy</span> += <span class="var2">gravity</span>; <span class="cm">// притяжение</span>
+<span class="var2">y</span> += <span class="var2">vy</span> * <span class="var2">deltaTime</span>;</div>
+          <p>Меняй гравитацию — меняется ощущение мира. Луна = 0.3, Земля = 0.8, Тяжёлый мир = 2.0</p>
+          <br>
+          <ul>
+            <li>Coyote time — прыжок чуть после края платформы</li>
+            <li>Jump buffer — нажал чуть до земли, прыгнет</li>
+            <li>Variable jump height — держишь дольше = выше</li>
+          </ul>
+        </div>
+        <div class="lab-demo">
+          <h4>// ПОПРОБУЙ ПРЫЖОК</h4>
+          <div class="canvas-wrap">
+            <canvas id="physicsCanvas" width="400" height="220"></canvas>
+            <div class="canvas-overlay" id="physOverlay">
+              НАЖМИ СТАРТ<br><span style="font-size:0.45rem;color:var(--muted)">ПРОБЕЛ ИЛИ КНОПКА</span>
+            </div>
+          </div>
+
+          <div class="param-row" style="margin-top:1rem">
+            <span class="param-label">gravity</span>
+            <input type="range" id="gravSlider" min="0.1" max="3" step="0.1" value="0.8" oninput="updateGrav()">
+            <span class="param-val" id="gravVal">0.8</span>
+          </div>
+          <div class="param-row">
+            <span class="param-label">jump force</span>
+            <input type="range" id="jumpSlider" min="5" max="18" step="0.5" value="12" oninput="updateJump()">
+            <span class="param-val" id="jumpVal">12</span>
+          </div>
+
+          <div class="controls-row">
+            <button class="btn-pixel primary" onclick="startPhysics()">▶ СТАРТ</button>
+            <button class="btn-pixel" onclick="doJump()" id="jumpBtn">⬆ ПРЫЖОК [ПРОБЕЛ]</button>
+          </div>
+          <div class="game-stat" id="phys-stat">HIGH: <span>0</span> PX</div>
+          <div class="info-box" id="phys-info" style="--lab-color:var(--pixel)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 2: PARTICLES ═══ -->
+    <div class="lab" style="--lab-color:var(--pink)">
+      <div class="lab-header">
+        <div class="lab-num">LAB-02</div>
+        <div class="lab-title">СИСТЕМА ЧАСТИЦ</div>
+        <div class="lab-tag">VFX</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-info">
+          <h4>// ЧТО ТАКОЕ ЧАСТИЦЫ</h4>
+          <p>Взрывы, огонь, искры, дым, магия — всё это системы частиц. Каждая частица: точка с позицией, скоростью, временем жизни и цветом.</p>
+          <div class="code-block">
+<span class="kw">class</span> <span class="fn">Particle</span> {
+  <span class="fn">constructor</span>(<span class="var2">x</span>, <span class="var2">y</span>) {
+    <span class="kw">this</span>.<span class="var2">x</span> = <span class="var2">x</span>;
+    <span class="kw">this</span>.<span class="var2">vx</span> = <span class="fn">random</span>(<span class="num">-3</span>, <span class="num">3</span>);
+    <span class="kw">this</span>.<span class="var2">vy</span> = <span class="fn">random</span>(<span class="num">-8</span>, <span class="num">-2</span>);
+    <span class="kw">this</span>.<span class="var2">life</span> = <span class="num">1.0</span>; <span class="cm">// 0..1</span>
+    <span class="kw">this</span>.<span class="var2">decay</span> = <span class="fn">random</span>(<span class="num">0.02</span>,<span class="num">0.05</span>);
+  }
+}</div>
+          <ul>
+            <li>Спавни много — убивай быстро</li>
+            <li>Рандом — основа натуральности</li>
+            <li>Fade out по life значению</li>
+            <li>Object pool — переиспользование</li>
+          </ul>
+        </div>
+        <div class="lab-demo">
+          <h4>// КЛИКАЙ ПО КАНВАСУ</h4>
+          <div class="canvas-wrap">
+            <canvas id="particleCanvas" width="400" height="220"></canvas>
+            <div class="canvas-overlay hidden"></div>
+          </div>
+
+          <div class="param-row" style="margin-top:1rem">
+            <span class="param-label">count</span>
+            <input type="range" id="countSlider" min="5" max="80" value="30" oninput="updateCount()">
+            <span class="param-val" id="countVal">30</span>
+          </div>
+          <div class="param-row">
+            <span class="param-label">gravity</span>
+            <input type="range" id="pGravSlider" min="-1" max="2" step="0.1" value="0.2" oninput="updatePGrav()">
+            <span class="param-val" id="pGravVal">0.2</span>
+          </div>
+          <div class="param-row">
+            <span class="param-label">режим</span>
+            <button class="btn-pixel" id="pMode1" onclick="setParticleMode('explosion')" style="--lab-color:var(--pink)">ВЗРЫВ</button>
+            <button class="btn-pixel" onclick="setParticleMode('fire')" style="--lab-color:var(--orange)">ОГОНЬ</button>
+            <button class="btn-pixel" onclick="setParticleMode('magic')" style="--lab-color:var(--purple)">МАГИЯ</button>
+          </div>
+          <div class="game-stat">ЧАСТИЦ: <span id="pCount">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 3: AI ═══ -->
+    <div class="lab" style="--lab-color:var(--cyan)">
+      <div class="lab-header">
+        <div class="lab-num">LAB-03</div>
+        <div class="lab-title">ПОВЕДЕНИЕ ВРАГОВ (FSM)</div>
+        <div class="lab-tag">AI</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-info">
+          <h4>// КОНЕЧНЫЙ АВТОМАТ</h4>
+          <p>FSM — Finite State Machine. Враг всегда находится в одном из состояний. Условия переключают состояния.</p>
+          <div class="code-block">
+<span class="cm">// Состояния врага</span>
+<span class="kw">switch</span>(<span class="var2">enemy</span>.<span class="var2">state</span>) {
+  <span class="kw">case</span> <span class="str">'patrol'</span>:
+    <span class="cm">// ходит туда-сюда</span>
+    <span class="kw">if</span>(<span class="fn">seePlayer</span>()) <span class="var2">state</span>=<span class="str">'chase'</span>;
+    <span class="kw">break</span>;
+  <span class="kw">case</span> <span class="str">'chase'</span>:
+    <span class="cm">// бежит к игроку</span>
+    <span class="kw">if</span>(<span class="fn">inRange</span>()) <span class="var2">state</span>=<span class="str">'attack'</span>;
+    <span class="kw">if</span>(!<span class="fn">seePlayer</span>()) <span class="var2">state</span>=<span class="str">'patrol'</span>;
+    <span class="kw">break</span>;
+}</div>
+          <ul>
+            <li>Patrol → видит игрока → Chase</li>
+            <li>Chase → в зоне удара → Attack</li>
+            <li>Attack → игрок убежал → Patrol</li>
+            <li>Любое → низкое HP → Flee</li>
+          </ul>
+        </div>
+        <div class="lab-demo">
+          <h4>// УПРАВЛЯЙ ИГРОКОМ</h4>
+          <div class="canvas-wrap">
+            <canvas id="aiCanvas" width="400" height="220"></canvas>
+            <div class="canvas-overlay" id="aiOverlay">
+              НАЖМИ СТАРТ<br><span style="font-size:0.45rem;color:var(--muted)">WASD / СТРЕЛКИ</span>
+            </div>
+          </div>
+
+          <div class="param-row" style="margin-top:1rem">
+            <span class="param-label">aggro range</span>
+            <input type="range" id="aggroSlider" min="30" max="180" value="90" oninput="updateAggro()">
+            <span class="param-val" id="aggroVal">90</span>
+          </div>
+          <div class="param-row">
+            <span class="param-label">enemy speed</span>
+            <input type="range" id="espeedSlider" min="0.5" max="4" step="0.5" value="1.5" oninput="updateESpeed()">
+            <span class="param-val" id="espeedVal">1.5</span>
+          </div>
+
+          <div class="controls-row">
+            <button class="btn-pixel primary" onclick="startAI()">▶ СТАРТ</button>
+            <button class="btn-pixel" onclick="resetAI()">↺ СБРОС</button>
+          </div>
+          <div class="game-stat">СОСТОЯНИЕ: <span id="ai-state">—</span></div>
+          <div class="info-box" id="ai-info" style="--lab-color:var(--cyan)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LAB 4: MINI PLATFORMER ═══ -->
+    <div class="lab" style="--lab-color:var(--green)">
+      <div class="lab-header">
+        <div class="lab-num">LAB-04</div>
+        <div class="lab-title">МИНИ-ПЛАТФОРМЕР</div>
+        <div class="lab-tag">ПОЛНАЯ ИГРА</div>
+      </div>
+      <div class="lab-body">
+        <div class="lab-info">
+          <h4>// ВСЁ ВМЕСТЕ</h4>
+          <p>Маленькая полная игра: платформер с физикой, коллизиями, врагами и счётом. Именно так выглядит первый pet-project начинающего геймдев разработчика.</p>
+          <br>
+          <ul>
+            <li>Физика прыжка с гравитацией</li>
+            <li>AABB коллизии с платформами</li>
+            <li>FSM враги — патруль и атака</li>
+            <li>Частицы при смерти врага</li>
+            <li>Счёт и жизни</li>
+          </ul>
+          <br>
+          <p style="opacity:0.5">Управление: A/D или ←/→ движение, W/↑/Пробел — прыжок.</p>
+          <br>
+          <p>Вот почему геймдев сложен: даже простой платформер требует физику + AI + рендер + UI + звук + левел дизайн. Это не сайт.</p>
+        </div>
+        <div class="lab-demo">
+          <h4>// ИГРАЙ</h4>
+          <div class="canvas-wrap">
+            <canvas id="platformerCanvas" width="400" height="260" style="width:100%"></canvas>
+            <div class="canvas-overlay" id="pfOverlay">
+              НАЖМИ СТАРТ<br><span style="font-size:0.45rem;color:var(--muted)">A/D + W/ПРОБЕЛ</span>
+            </div>
+          </div>
+          <div class="controls-row">
+            <button class="btn-pixel primary" onclick="startPlatformer()">▶ СТАРТ</button>
+            <button class="btn-pixel" onclick="resetPlatformer()">↺ РЕСТАРТ</button>
+          </div>
+          <div class="game-stat">СЧЁТ: <span id="pf-score">0</span> &nbsp;|&nbsp; ЖИЗНИ: <span id="pf-lives">3</span> &nbsp;|&nbsp; <span id="pf-msg"></span></div>
+          <div class="info-box show" id="pf-info" style="--lab-color:var(--green)">
+            <strong>Совет:</strong> Прыгай на врагов сверху чтобы убить. Касание сбоку = потеря жизни. Собирай монеты.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TRUTH -->
+<div class="divider"></div>
+<div class="section" id="truth">
+  <div class="reveal">
+    <div class="sec-eyebrow">// 03 — РЕАЛЬНОСТЬ</div>
+    <h2 class="sec-title">ГЕЙМДЕВ:<br>МЕЧТА vs ПРАВДА</h2>
+    <p class="sec-desc">То чего не расскажут в видео "как я стал геймдев разработчиком". Честно.</p>
+  </div>
+
+  <div class="truth-grid reveal">
+    <div class="truth-card" style="--tc-color:var(--green)">
+      <span class="tc-icon">✅</span>
+      <div class="tc-head">ЧТО РЕАЛЬНО КРУТО</div>
+      <div class="tc-body">Видишь продукт в котором люди проводят сотни часов. Технически разнообразно — никогда не скучно. Навыки C++ и математика — ценятся везде. Мощное глобальное комьюнити. Инди — можешь делать что хочешь.</div>
+    </div>
+    <div class="truth-card" style="--tc-color:var(--pink)">
+      <span class="tc-icon">⚠️</span>
+      <div class="tc-head">CRUNCH КУЛЬТУРА</div>
+      <div class="tc-body">За 3–6 месяцев до релиза — 60–80 часов в неделю стандарт. Это не "иногда". Это система. CD Projekt Red перед Cyberpunk: ежедневно до 100 часов. Нормализовано до такой степени что люди сами себе не признаются.</div>
+    </div>
+    <div class="truth-card" style="--tc-color:var(--yellow)">
+      <span class="tc-icon">💰</span>
+      <div class="tc-head">ЗАРПЛАТЫ НИЖЕ IT</div>
+      <div class="tc-body">Разработчик с 5 годами опыта в геймдеве получает на 30–40% меньше чем тот же специалист в корпоративном IT. "Но ведь это игры!" — именно это и позволяет студиям платить меньше. Они продают мечту.</div>
+    </div>
+    <div class="truth-card" style="--tc-color:var(--orange)">
+      <span class="tc-icon">🔥</span>
+      <div class="tc-head">80% — РУТИНА</div>
+      <div class="tc-body">Большую часть времени ты не создаёшь крутые механики. Ты чинишь баги в коде 2015 года, оптимизируешь память, делаешь скучные UI-элементы по чужому ТЗ. Интересные задачи — 20% рабочего времени максимум.</div>
+    </div>
+    <div class="truth-card" style="--tc-color:var(--purple)">
+      <span class="tc-icon">😔</span>
+      <div class="tc-head">ИНДИ РЕАЛЬНОСТЬ</div>
+      <div class="tc-body">95% инди-игр зарабатывают меньше $1000 за всё время. Средний инди разработчик зарабатывает меньше джуна в банке. Истории успеха Minecraft и Stardew Valley — это лотерея. Выживших ошибка восприятия.</div>
+    </div>
+    <div class="truth-card" style="--tc-color:var(--cyan)">
+      <span class="tc-icon">💡</span>
+      <div class="tc-head">НО ЕСЛИ ГОРИТ — ИДИ</div>
+      <div class="tc-body">Если ты не можешь не делать игры — иди. Лучший путь: геймдев как хобби + стабильная IT работа → накапливаешь деньги → делаешь инди проект без финансового давления. Многие хиты так и появились.</div>
+    </div>
+  </div>
+
+  <!-- SALARY TABLE -->
+  <div class="salary-section reveal">
+    <h3 style="font-family:'Press Start 2P',monospace;font-size:0.7rem;color:var(--pixel);margin-bottom:1.5rem;line-height:1.6">ЗАРПЛАТЫ В ГЕЙМДЕВЕ<br><span style="color:var(--muted);font-size:0.5rem">РФ/СНГ РЫНОК 2024–2025</span></h3>
+    <table class="salary-table">
+      <thead>
+        <tr>
+          <th>РОЛЬ</th>
+          <th>ДЖУН</th>
+          <th>МИДЛ</th>
+          <th>СИНЬОР</th>
+          <th>ЗАМЕТКА</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag-role">Gameplay Programmer</span></td>
+          <td>55–80к</td>
+          <td>130–200к</td>
+          <td>220–350к</td>
+          <td style="opacity:0.5;font-size:0.8rem">Самая конкурентная позиция</td>
+        </tr>
+        <tr>
+          <td><span class="tag-role">Engine Programmer</span></td>
+          <td>70–100к</td>
+          <td>160–250к</td>
+          <td>280–450к</td>
+          <td style="opacity:0.5;font-size:0.8rem">C++, редко, ценится высоко</td>
+        </tr>
+        <tr>
+          <td><span class="tag-role">Technical Artist</span></td>
+          <td>60–90к</td>
+          <td>120–180к</td>
+          <td>200–300к</td>
+          <td style="opacity:0.5;font-size:0.8rem">Код + 3D = редкий скилл</td>
+        </tr>
+        <tr>
+          <td><span class="tag-role">Game Designer</span></td>
+          <td>45–70к</td>
+          <td>90–160к</td>
+          <td>170–270к</td>
+          <td style="opacity:0.5;font-size:0.8rem">Без кода — меньше вакансий</td>
+        </tr>
+        <tr>
+          <td><span class="tag-role">Network Programmer</span></td>
+          <td>80–110к</td>
+          <td>170–270к</td>
+          <td>300–500к</td>
+          <td style="opacity:0.5;font-size:0.8rem">Онлайн-игры = высокий спрос</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="divider"></div>
+<div class="section" id="roadmap">
+  <div class="reveal">
+    <div class="sec-eyebrow">// 04 — ПУТЬ</div>
+    <h2 class="sec-title">КАК ВОЙТИ<br>В ГЕЙМДЕВ</h2>
+    <p class="sec-desc">Реальный путь без романтики. С нуля до первой работы в студии.</p>
+  </div>
+
+  <div class="roadmap" id="roadmapEl">
+    <div class="rm-item">
+      <div class="rm-dot">1</div>
+      <div class="rm-phase">ФАЗА 01 · 1–3 МЕС</div>
+      <div class="rm-title">ВЫБЕРИ ДВИЖОК И УЧИСЬ</div>
+      <div class="rm-desc">Unity (C#) — проще старт, больше вакансий в мобилках и инди. Unreal (C++) — AAA студии, сложнее, но ценится больше. Godot (GDScript/C#) — бесплатный, отличный для старта. Пройди официальный туториал полностью.</div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot">2</div>
+      <div class="rm-phase">ФАЗА 02 · 3–8 МЕС</div>
+      <div class="rm-title">СДЕЛАЙ 5 МАЛЕНЬКИХ ИГР</div>
+      <div class="rm-desc">Не одну большую — пять маленьких законченных. Pong, Snake, Arkanoid, платформер, шутер сверху. Законченность важнее масштаба. 90% начинающих бросают одну большую игру на середине.</div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot">3</div>
+      <div class="rm-phase">ФАЗА 03 · 8–14 МЕС</div>
+      <div class="rm-title">GAME JAM — ОБЯЗАТЕЛЬНО</div>
+      <div class="rm-desc">Ludum Dare, Global Game Jam, Brackeys Game Jam. 48–72 часа — сделай игру. Невозможно? Возможно. Это лучшая практика командной работы и дедлайнов. Работодатели любят видеть jam-игры в портфолио.</div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot">4</div>
+      <div class="rm-phase">ФАЗА 04 · 14–20 МЕС</div>
+      <div class="rm-title">ПОРТФОЛИО И GITHUB</div>
+      <div class="rm-desc">Itch.io профиль с реальными играми. GitHub с чистым кодом. Одна "showcase" игра которой не стыдно. Без этого — ты просто человек который "хочет делать игры". С этим — разработчик.</div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-dot">5</div>
+      <div class="rm-phase">ФАЗА 05 · 20–30 МЕС</div>
+      <div class="rm-title">ПЕРВАЯ РАБОТА</div>
+      <div class="rm-desc">Аутсорс-студии — берут охотнее всего джунов. Стартапы — маленькие команды, учишься быстрее. Первые 2 года — не смотри на зарплату, смотри на скорость роста. Потом деньги придут сами.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+<footer>
+  <div class="footer-logo">GAMEDEV.EXE</div>
+  <p>УРОК 01 · РАЗРАБОТКА ИГР · ИНТЕРАКТИВНЫЙ КУРС</p>
+  <p style="margin-top:0.5rem;font-size:0.75rem">ДАННЫЕ АКТУАЛЬНЫ ДЛЯ РЫНКА СНГ 2024–2025</p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// STARS BG
+// ═══════════════════════════════════════
+(function(){
+  const c = document.getElementById('starsCanvas');
+  const ctx = c.getContext('2d');
+  function resize(){ c.width=window.innerWidth; c.height=window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  const stars = Array.from({length:120}, ()=>({
+    x:Math.random()*9999, y:Math.random()*9999,
+    s:Math.random()<0.7?1:2,
+    b:Math.random()
+  }));
+  function drawStars(){
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      s.b += 0.005;
+      const alpha = 0.2 + Math.abs(Math.sin(s.b))*0.5;
+      ctx.fillStyle = `rgba(180,180,255,${alpha})`;
+      ctx.fillRect(s.x%c.width, s.y%c.height, s.s, s.s);
+    });
+    requestAnimationFrame(drawStars);
+  }
+  drawStars();
+})();
+
+// ═══════════════════════════════════════
+// SCORE
+// ═══════════════════════════════════════
+let totalScore = 0;
+function addScore(n){
+  totalScore += n;
+  document.getElementById('nav-score').textContent = 'SCORE: ' + String(totalScore).padStart(5,'0');
+}
+
+// ═══════════════════════════════════════
+// LAB 1: PHYSICS
+// ═══════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('physicsCanvas');
+  const ctx = canvas.getContext('2d');
+  let running = false, raf = null;
+  let gravity = 0.8, jumpForce = 12;
+  let player = {x:50, y:160, vy:0, onGround:false, w:16, h:20};
+  const platforms = [
+    {x:0,y:180,w:120,h:40},
+    {x:150,y:140,w:80,h:12},
+    {x:280,y:110,w:80,h:12},
+    {x:160,y:60,w:80,h:12},
+    {x:340,y:160,w:60,h:40},
+  ];
+  let highY = 0, scoreGiven = false;
+  let coins = [{x:200,y:50,collected:false},{x:300,y:100,collected:false},{x:170,y:130,collected:false}];
+
+  window.updateGrav = ()=>{
+    gravity = parseFloat(document.getElementById('gravSlider').value);
+    document.getElementById('gravVal').textContent = gravity.toFixed(1);
+  };
+  window.updateJump = ()=>{
+    jumpForce = parseFloat(document.getElementById('jumpSlider').value);
+    document.getElementById('jumpVal').textContent = jumpForce.toFixed(1);
+  };
+
+  function drawPixelRect(ctx, x, y, w, h, color){
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x), Math.round(y), w, h);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(Math.round(x), Math.round(y), w, 2);
+  }
+
+  function update(){
+    player.vy += gravity * 0.4;
+    player.y += player.vy;
+    player.onGround = false;
+    platforms.forEach(p=>{
+      if(player.x+player.w > p.x && player.x < p.x+p.w &&
+         player.y+player.h > p.y && player.y+player.h < p.y+p.h+10 && player.vy >= 0){
+        player.y = p.y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+      }
+    });
+    if(player.y > 250){ player.y=160; player.vy=0; player.x=50; }
+    const relY = 180 - player.y;
+    if(relY > highY){ highY = relY; document.querySelector('#phys-stat span').textContent = Math.round(highY); }
+    coins.forEach(coin=>{
+      if(!coin.collected && Math.abs(player.x-coin.x)<18 && Math.abs(player.y-coin.y)<18){
+        coin.collected=true;
+        addScore(10);
+        if(!scoreGiven){ scoreGiven=true; }
+        showPhysInfo();
+      }
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#070714';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // grid
+    ctx.strokeStyle='rgba(42,42,90,0.4)';
+    ctx.lineWidth=1;
+    for(let x=0;x<canvas.width;x+=20){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke(); }
+    for(let y=0;y<canvas.height;y+=20){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke(); }
+    // platforms
+    platforms.forEach(p=>drawPixelRect(ctx,p.x,p.y,p.w,p.h,'#3333aa'));
+    // coins
+    coins.forEach(c=>{
+      if(!c.collected){
+        ctx.fillStyle='#f7f718';
+        ctx.fillRect(Math.round(c.x-4),Math.round(c.y-4),8,8);
+        ctx.fillStyle='rgba(247,247,24,0.3)';
+        ctx.fillRect(Math.round(c.x-6),Math.round(c.y-6),12,12);
+      }
+    });
+    // player
+    drawPixelRect(ctx,player.x,player.y,player.w,player.h,'#ff2d78');
+    // eyes
+    ctx.fillStyle='#fff';
+    ctx.fillRect(Math.round(player.x+3),Math.round(player.y+4),3,3);
+    ctx.fillRect(Math.round(player.x+10),Math.round(player.y+4),3,3);
+    // gravity indicator
+    ctx.fillStyle='rgba(247,247,24,0.6)';
+    ctx.font='8px "Press Start 2P"';
+    ctx.fillText('g='+gravity.toFixed(1), 4, 12);
+  }
+
+  function loop(){ update(); draw(); raf=requestAnimationFrame(loop); }
+
+  window.startPhysics = ()=>{
+    document.getElementById('physOverlay').classList.add('hidden');
+    if(raf) cancelAnimationFrame(raf);
+    player={x:50,y:160,vy:0,onGround:false,w:16,h:20};
+    coins=[{x:200,y:50,collected:false},{x:300,y:100,collected:false},{x:170,y:130,collected:false}];
+    running=true;
+    loop();
+    addScore(5);
+  };
+
+  window.doJump = ()=>{
+    if(player.onGround){ player.vy=-jumpForce*0.5; showPhysInfo(); addScore(3); }
+  };
+
+  document.addEventListener('keydown', e=>{
+    if((e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW') && running){
+      e.preventDefault(); window.doJump();
+    }
+    if(e.code==='ArrowLeft'||e.code==='KeyA') player.x -= 3;
+    if(e.code==='ArrowRight'||e.code==='KeyD') player.x += 3;
+    player.x = Math.max(0, Math.min(canvas.width-player.w, player.x));
+  });
+
+  document.getElementById('jumpBtn').addEventListener('click', window.doJump);
+
+  function showPhysInfo(){
+    const el = document.getElementById('phys-info');
+    el.classList.add('show');
+    el.innerHTML = `<strong>Что произошло:</strong> Прыжок применил начальную скорость <strong>vy = -${jumpForce}</strong>. Каждый кадр гравитация добавляет <strong>+${gravity.toFixed(1)}</strong>. Когда vy > 0 — персонаж летит вниз. Коллизия с платформой останавливает его. Именно так работает Mario, Celeste, Hollow Knight.`;
+  }
+
+  // Initial draw
+  ctx.fillStyle='#070714'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  platforms.forEach(p=>drawPixelRect(ctx,p.x,p.y,p.w,p.h,'#3333aa'));
+})();
+
+// ═══════════════════════════════════════
+// LAB 2: PARTICLES
+// ═══════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let pCount = 30, pGrav = 0.2, pMode = 'explosion';
+
+  window.updateCount = ()=>{ pCount=parseInt(document.getElementById('countSlider').value); document.getElementById('countVal').textContent=pCount; };
+  window.updatePGrav = ()=>{ pGrav=parseFloat(document.getElementById('pGravSlider').value); document.getElementById('pGravVal').textContent=pGrav.toFixed(1); };
+  window.setParticleMode = (m)=>{ pMode=m; };
+
+  function spawnParticles(x,y){
+    for(let i=0;i<pCount;i++){
+      const angle = Math.random()*Math.PI*2;
+      const speed = Math.random()*5+1;
+      let color;
+      if(pMode==='explosion'){ color=`hsl(${Math.random()*60},100%,${50+Math.random()*30}%)`; }
+      else if(pMode==='fire'){ color=`hsl(${Math.random()*40},100%,${40+Math.random()*40}%)`; }
+      else { color=`hsl(${260+Math.random()*80},100%,${60+Math.random()*30}%)`; }
+      particles.push({
+        x,y,
+        vx: pMode==='fire'? (Math.random()-0.5)*2 : Math.cos(angle)*speed,
+        vy: pMode==='fire'? -(Math.random()*4+2) : Math.sin(angle)*speed,
+        life:1,
+        decay:Math.random()*0.03+0.015,
+        size:Math.random()*4+2,
+        color
+      });
+    }
+    addScore(2);
+  }
+
+  canvas.addEventListener('click', e=>{
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+    spawnParticles((e.clientX-rect.left)*scaleX,(e.clientY-rect.top)*scaleY);
+  });
+  canvas.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width, scaleY=canvas.height/rect.height;
+    const t=e.touches[0];
+    spawnParticles((t.clientX-rect.left)*scaleX,(t.clientY-rect.top)*scaleY);
+  },{passive:false});
+
+  function loop(){
+    ctx.fillStyle='rgba(7,7,20,0.25)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      p.vy+=pGrav*0.3;
+      p.vx*=0.98;
+      p.life-=p.decay;
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.color;
+      const s=p.size*p.life;
+      ctx.fillRect(Math.round(p.x-s/2),Math.round(p.y-s/2),Math.ceil(s),Math.ceil(s));
+    });
+    ctx.globalAlpha=1;
+    particles=particles.filter(p=>p.life>0);
+    document.getElementById('pCount').textContent=particles.length;
+    requestAnimationFrame(loop);
+  }
+  loop();
+  // Spawn initial burst
+  setTimeout(()=>spawnParticles(200,110),500);
+})();
+
+// ═══════════════════════════════════════
+// LAB 3: AI FSM
+// ═══════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('aiCanvas');
+  const ctx = canvas.getContext('2d');
+  let running=false, raf=null;
+  let aggroRange=90, eSpeed=1.5;
+  let keys={};
+  let scoreGiven=false;
+
+  let player={x:60,y:160,vx:0,vy:0,w:14,h:18,onGround:false};
+  let enemies=[];
+
+  const platforms=[
+    {x:0,y:180,w:400,h:40},
+    {x:100,y:130,w:80,h:10},
+    {x:250,y:110,w:80,h:10},
+  ];
+
+  function resetState(){
+    player={x:60,y:160,vx:0,vy:0,w:14,h:18,onGround:false};
+    enemies=[
+      {x:300,y:162,vx:0,w:14,h:18,state:'patrol',dir:1,timer:0,patrolMin:220,patrolMax:380,color:'#ff2d78'},
+      {x:160,y:112,vx:0,w:14,h:18,state:'patrol',dir:1,timer:0,patrolMin:100,patrolMax:180,color:'#ff8c30'},
+    ];
+  }
+  resetState();
+
+  window.updateAggro=()=>{ aggroRange=parseInt(document.getElementById('aggroSlider').value); document.getElementById('aggroVal').textContent=aggroRange; };
+  window.updateESpeed=()=>{ eSpeed=parseFloat(document.getElementById('espeedSlider').value); document.getElementById('espeedVal').textContent=eSpeed.toFixed(1); };
+
+  document.addEventListener('keydown',e=>{ keys[e.code]=true; });
+  document.addEventListener('keyup',e=>{ keys[e.code]=false; });
+
+  function applyPhysics(obj, grav=0.5){
+    obj.vy+=grav;
+    obj.y+=obj.vy;
+    obj.onGround=false;
+    platforms.forEach(p=>{
+      if(obj.x+obj.w>p.x && obj.x<p.x+p.w && obj.y+obj.h>p.y && obj.y+obj.h<p.y+p.h+8 && obj.vy>=0){
+        obj.y=p.y-obj.h; obj.vy=0; obj.onGround=true;
+      }
+    });
+    if(obj.y>280){ obj.y=162; obj.vy=0; }
+  }
+
+  function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+
+  function updateEnemy(e){
+    const d=dist(e,player);
+    const prevState=e.state;
+    if(e.state==='patrol'){
+      e.vx=e.dir*eSpeed*0.8;
+      e.x+=e.vx;
+      if(e.x>e.patrolMax){e.dir=-1;}
+      if(e.x<e.patrolMin){e.dir=1;}
+      if(d<aggroRange) e.state='chase';
+    } else if(e.state==='chase'){
+      const dx=player.x-e.x;
+      e.vx=(dx>0?1:-1)*eSpeed;
+      e.x+=e.vx;
+      if(d<24) e.state='attack';
+      if(d>aggroRange*1.5) e.state='patrol';
+    } else if(e.state==='attack'){
+      e.vx=0;
+      e.timer++;
+      if(e.timer>30){ e.timer=0; e.state='chase'; }
+      if(d>50) e.state='chase';
+    }
+    if(e.state!==prevState && !scoreGiven){
+      document.getElementById('ai-info').classList.add('show');
+      document.getElementById('ai-info').innerHTML=`<strong>Переключение состояния!</strong> Враг перешёл из <strong>${prevState}</strong> → <strong>${e.state}</strong>. Именно так работает FSM: каждый кадр проверяются условия переходов. Измени aggro range — и враг будет реагировать с другого расстояния.`;
+      scoreGiven=true; addScore(10);
+    }
+    applyPhysics(e, 0.4);
+    e.x=Math.max(0,Math.min(canvas.width-e.w,e.x));
+  }
+
+  function update(){
+    const spd=2.2;
+    if(keys['ArrowLeft']||keys['KeyA']) player.vx=-spd;
+    else if(keys['ArrowRight']||keys['KeyD']) player.vx=spd;
+    else player.vx*=0.7;
+    if((keys['ArrowUp']||keys['KeyW']||keys['Space'])&&player.onGround){ player.vy=-9; }
+    player.x+=player.vx;
+    player.x=Math.max(0,Math.min(canvas.width-player.w,player.x));
+    applyPhysics(player);
+    enemies.forEach(updateEnemy);
+    // state display
+    const states=enemies.map(e=>`${e.state.toUpperCase()}`).join(' | ');
+    document.getElementById('ai-state').textContent=states;
+  }
+
+  function drawEntity(obj, color){
+    ctx.fillStyle=color;
+    ctx.fillRect(Math.round(obj.x),Math.round(obj.y),obj.w,obj.h);
+    ctx.fillStyle='rgba(255,255,255,0.2)';
+    ctx.fillRect(Math.round(obj.x),Math.round(obj.y),obj.w,2);
+    ctx.fillStyle='#fff';
+    ctx.fillRect(Math.round(obj.x+2),Math.round(obj.y+3),3,3);
+    ctx.fillRect(Math.round(obj.x+9),Math.round(obj.y+3),3,3);
+  }
+
+  function draw(){
+    ctx.fillStyle='#070714'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='rgba(42,42,90,0.3)'; ctx.lineWidth=1;
+    for(let x=0;x<canvas.width;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
+    for(let y=0;y<canvas.height;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
+    platforms.forEach(p=>{
+      ctx.fillStyle='#3333aa'; ctx.fillRect(p.x,p.y,p.w,p.h);
+      ctx.fillStyle='rgba(255,255,255,0.1)'; ctx.fillRect(p.x,p.y,p.w,2);
+    });
+    // aggro range circles
+    enemies.forEach(e=>{
+      ctx.strokeStyle='rgba(255,45,120,0.15)';
+      ctx.lineWidth=1;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      ctx.arc(e.x+e.w/2,e.y+e.h/2,aggroRange,0,Math.PI*2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // state label
+      const stateColors={patrol:'#5050aa',chase:'#ffaa00',attack:'#ff2d78'};
+      ctx.fillStyle=stateColors[e.state]||'#fff';
+      ctx.font='6px "Press Start 2P"';
+      ctx.fillText(e.state.toUpperCase(), e.x-10, e.y-5);
+      drawEntity(e,e.color);
+    });
+    drawEntity(player,'#18f7f7');
+    // player label
+    ctx.fillStyle='#18f7f7'; ctx.font='6px "Press Start 2P"';
+    ctx.fillText('YOU', player.x-2, player.y-5);
+  }
+
+  function loop(){ update(); draw(); raf=requestAnimationFrame(loop); }
+
+  window.startAI=()=>{
+    document.getElementById('aiOverlay').classList.add('hidden');
+    if(raf) cancelAnimationFrame(raf);
+    scoreGiven=false;
+    resetState();
+    running=true;
+    loop();
+    addScore(5);
+  };
+  window.resetAI=()=>{ resetState(); };
+
+  ctx.fillStyle='#070714'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  platforms.forEach(p=>{ ctx.fillStyle='#3333aa'; ctx.fillRect(p.x,p.y,p.w,p.h); });
+})();
+
+// ═══════════════════════════════════════
+// LAB 4: MINI PLATFORMER
+// ═══════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('platformerCanvas');
+  const ctx = canvas.getContext('2d');
+  let W=400, H=260;
+  let raf=null, running=false, keys={};
+  let score=0, lives=3, gameOver=false;
+
+  const platforms=[
+    {x:0,y:220,w:400,h:40},
+    {x:60,y:170,w:70,h:10},
+    {x:180,y:140,w:70,h:10},
+    {x:290,y:110,w:70,h:10},
+    {x:100,y:90,w:60,h:10},
+  ];
+  const coins=[];
+  const particles=[];
+  let player,enemies,coinData;
+
+  function makeCoin(x,y){ return {x,y,collected:false,r:5,bob:Math.random()*Math.PI*2}; }
+
+  function resetGame(){
+    score=0; lives=3; gameOver=false;
+    player={x:30,y:190,vx:0,vy:0,w:14,h:18,onGround:false,invincible:0};
+    enemies=[
+      {x:250,y:202,vx:1,w:14,h:18,dir:1,onGround:false,alive:true,minX:180,maxX:380},
+      {x:170,y:152,vx:0.8,w:14,h:18,dir:1,onGround:false,alive:true,minX:180,maxX:240},
+      {x:290,y:92,vx:0.7,w:14,h:18,dir:1,onGround:false,alive:true,minX:290,maxX:355},
+    ];
+    coins.length=0;
+    coins.push(makeCoin(80,155),makeCoin(200,125),makeCoin(310,95),makeCoin(120,75),makeCoin(350,145));
+    document.getElementById('pf-score').textContent='0';
+    document.getElementById('pf-lives').textContent='3';
+    document.getElementById('pf-msg').textContent='';
+  }
+  resetGame();
+
+  document.addEventListener('keydown',e=>{ keys[e.code]=true; });
+  document.addEventListener('keyup',e=>{ keys[e.code]=false; });
+  canvas.addEventListener('touchstart',e=>{e.preventDefault(); player.vy<0||!player.onGround ? null : (player.vy=-10,player.onGround=false);},{passive:false});
+
+  function applyPlatformPhysics(obj){
+    obj.vy+=0.5; obj.y+=obj.vy; obj.x+=obj.vx; obj.onGround=false;
+    platforms.forEach(p=>{
+      if(obj.x+obj.w>p.x && obj.x<p.x+p.w && obj.y+obj.h>p.y && obj.y+obj.h<p.y+p.h+10 && obj.vy>=0){
+        obj.y=p.y-obj.h; obj.vy=0; obj.onGround=true;
+      }
+    });
+    if(obj.y>H+20){ obj.y=190; obj.vy=0; }
+    obj.x=Math.max(0,Math.min(W-obj.w,obj.x));
+  }
+
+  function spawnDeathParticles(x,y,color){
+    for(let i=0;i<12;i++){
+      const a=Math.random()*Math.PI*2;
+      const s=Math.random()*4+1;
+      particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-3,life:1,decay:0.05,color,size:4});
+    }
+  }
+
+  function update(){
+    if(gameOver) return;
+    if(player.invincible>0) player.invincible--;
+    const spd=2.5;
+    if(keys['ArrowLeft']||keys['KeyA']) player.vx=-spd;
+    else if(keys['ArrowRight']||keys['KeyD']) player.vx=spd;
+    else player.vx*=0.75;
+    if((keys['ArrowUp']||keys['KeyW']||keys['Space'])&&player.onGround){ player.vy=-10; player.onGround=false; }
+    applyPlatformPhysics(player);
+
+    enemies.forEach(e=>{
+      if(!e.alive) return;
+      e.vx=e.dir*1.2;
+      if(e.x>e.maxX){e.dir=-1;} if(e.x<e.minX){e.dir=1;}
+      applyPlatformPhysics(e);
+      // player/enemy collision
+      if(player.invincible===0 && player.x+player.w>e.x+2 && player.x<e.x+e.w-2 && player.y+player.h>e.y+2 && player.y<e.y+e.h){
+        if(player.vy>0 && player.y+player.h < e.y+e.h*0.6){
+          // stomp
+          e.alive=false;
+          player.vy=-7;
+          spawnDeathParticles(e.x+7,e.y+9,'#ff2d78');
+          score+=100; document.getElementById('pf-score').textContent=score;
+          addScore(10);
+        } else if(player.invincible===0){
+          lives--; player.invincible=90;
+          document.getElementById('pf-lives').textContent=lives;
+          spawnDeathParticles(player.x+7,player.y+9,'#18f7f7');
+          if(lives<=0){ gameOver=true; document.getElementById('pf-msg').textContent='GAME OVER'; addScore(50); }
+        }
+      }
+    });
+
+    // coins
+    coins.forEach(c=>{
+      c.bob+=0.08;
+      if(!c.collected && Math.abs(player.x+7-(c.x)) < 14 && Math.abs(player.y+9-(c.y)) < 14){
+        c.collected=true; score+=50;
+        document.getElementById('pf-score').textContent=score;
+        spawnDeathParticles(c.x,c.y,'#f7f718');
+        addScore(5);
+      }
+    });
+
+    // particles
+    particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.2; p.life-=p.decay; });
+
+    const allCollected=coins.every(c=>c.collected);
+    const allDead=enemies.every(e=>!e.alive);
+    if(allCollected&&allDead&&!gameOver){ document.getElementById('pf-msg').textContent='ПОБЕДА! 🏆'; gameOver=true; addScore(100); }
+  }
+
+  function draw(){
+    ctx.fillStyle='#070714'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(42,42,90,0.2)'; ctx.lineWidth=1;
+    for(let x=0;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    // platforms
+    platforms.forEach(p=>{
+      ctx.fillStyle='#3333aa'; ctx.fillRect(p.x,p.y,p.w,p.h);
+      // grass top
+      ctx.fillStyle='#4444cc'; ctx.fillRect(p.x,p.y,p.w,4);
+      for(let i=p.x;i<p.x+p.w;i+=8){ ctx.fillStyle='#5555dd'; ctx.fillRect(i,p.y,4,4); }
+    });
+
+    // coins
+    coins.forEach(c=>{
+      if(c.collected) return;
+      const by=Math.sin(c.bob)*3;
+      ctx.fillStyle='#f7f718';
+      ctx.fillRect(Math.round(c.x-4),Math.round(c.y-4+by),8,8);
+      ctx.fillStyle='rgba(247,247,24,0.25)';
+      ctx.beginPath(); ctx.arc(c.x,c.y+by,10,0,Math.PI*2); ctx.fill();
+    });
+
+    // enemies
+    enemies.forEach(e=>{
+      if(!e.alive) return;
+      ctx.fillStyle='#ff2d78';
+      ctx.fillRect(Math.round(e.x),Math.round(e.y),e.w,e.h);
+      ctx.fillStyle='#fff';
+      const ex=e.dir>0?e.x+9:e.x+2;
+      ctx.fillRect(Math.round(ex),Math.round(e.y+4),3,3);
+      ctx.fillRect(Math.round(e.dir>0?e.x+2:e.x+9),Math.round(e.y+4),3,3);
+      // stomp indicator
+      ctx.fillStyle='rgba(255,45,120,0.2)';
+      ctx.fillRect(Math.round(e.x),Math.round(e.y),e.w,4);
+    });
+
+    // player
+    if(player.invincible===0 || Math.floor(player.invincible/5)%2===0){
+      ctx.fillStyle='#18f7f7';
+      ctx.fillRect(Math.round(player.x),Math.round(player.y),player.w,player.h);
+      ctx.fillStyle='#fff';
+      ctx.fillRect(Math.round(player.x+2),Math.round(player.y+4),3,3);
+      ctx.fillRect(Math.round(player.x+9),Math.round(player.y+4),3,3);
+    }
+
+    // particles
+    particles.forEach(p=>{
+      ctx.globalAlpha=Math.max(0,p.life);
+      ctx.fillStyle=p.color;
+      ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.ceil(p.size*p.life),Math.ceil(p.size*p.life));
+    });
+    ctx.globalAlpha=1;
+
+    // remove dead particles
+    for(let i=particles.length-1;i>=0;i--){ if(particles[i].life<=0) particles.splice(i,1); }
+
+    if(gameOver){
+      ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#f7f718';
+      ctx.font='12px "Press Start 2P"';
+      ctx.textAlign='center';
+      ctx.fillText(lives>0?'ПОБЕДА!':'GAME OVER', W/2, H/2-10);
+      ctx.font='7px "Press Start 2P"';
+      ctx.fillStyle='#8888cc';
+      ctx.fillText('SCORE: '+score, W/2, H/2+10);
+      ctx.textAlign='left';
+    }
+  }
+
+  function loop(){ update(); draw(); raf=requestAnimationFrame(loop); }
+
+  window.startPlatformer=()=>{
+    document.getElementById('pfOverlay').classList.add('hidden');
+    if(raf) cancelAnimationFrame(raf);
+    resetGame();
+    running=true;
+    loop();
+    addScore(10);
+  };
+  window.resetPlatformer=()=>{ resetGame(); if(!running){ startPlatformer(); } };
+
+  ctx.fillStyle='#070714'; ctx.fillRect(0,0,W,H);
+  platforms.forEach(p=>{ctx.fillStyle='#3333aa';ctx.fillRect(p.x,p.y,p.w,p.h);});
+})();
+
+// ═══════════════════════════════════════
+// SCROLL REVEAL
+// ═══════════════════════════════════════
+const obs=new IntersectionObserver(e=>e.forEach(el=>{ if(el.isIntersecting) el.target.classList.add('visible'); }),{threshold:0.08});
+document.querySelectorAll('.reveal,.rm-item').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
